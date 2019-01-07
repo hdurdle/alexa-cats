@@ -212,12 +212,12 @@ alexaApp.intent('GetCatsInLocationIntent', {
         speech += cats_in_location[i].name + ', ';
       }
       speech += 'and ' + cats_in_location[cats_in_location.length - 1].name
-
+      speech += ' are ';
     } else if (cats_in_location.length > 0) {
       speech += cats_in_location[cats_in_location.length - 1].name
-
+      speech += ' is ';
     } else {
-      speech = 'No kitties';
+      speech = 'No kitties are ';
     }
 
     var inThe = '';
@@ -227,7 +227,7 @@ alexaApp.intent('GetCatsInLocationIntent', {
       inThe = "in the ";
     }
 
-    speech += " are " + inThe + locationnames[0];
+    speech += inThe + locationnames[0];
     speech += '.';
 
     console.log(speech);
