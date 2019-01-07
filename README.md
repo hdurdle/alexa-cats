@@ -45,3 +45,17 @@ for example:
 ```
 
 leave the final `null` item (this makes sure it works when you've manually set pet's inside/outside state)
+
+### Docker
+
+```Dockerfile
+  alexa-cats:
+    build:
+      context: '/alexa-cats/'
+    container_name: alexa-cats
+    ports:
+      - 4040:8080
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /path/to/alexa-cats/config.json:/app/config.json
+```
