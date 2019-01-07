@@ -5,6 +5,10 @@ The device in question: https://www.surepetcare.com/en-gb/pet-doors/microchip-pe
 
 This is the custom Web Service that acts as the endpoint for an Alexa Skill. 
 
+### Demo
+
+[![Alexa Cat Flap Demo](https://img.youtube.com/vi/2CwArWuvpXA/0.jpg)](https://www.youtube.com/watch?v=2CwArWuvpXA)
+
 ### Getting Started
 Create a `config.json` based on the `-dist` copy in the repo, and put your SureFlap token in it.
 
