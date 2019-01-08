@@ -1,6 +1,7 @@
 {
   "token": "your_sureflap_token_from_their_API",
   "household": 1234,
+  "port": 4040,
   "flaps": [
     {
       "id": 12345,
@@ -9,9 +10,9 @@
       "name": "back door"
     },
     {
-      "id": null,
-      "in": "[inside]",
-      "out": "[outside]",
+      "id": 0,
+      "in": "inside",
+      "out": "outside",
       "name": ""
     }
   ]
