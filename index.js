@@ -1,27 +1,23 @@
 var fs = require('fs');
 var express = require("express");
 var alexa = require('alexa-app');
+const querystring = require('querystring');
 const https = require('https');
 const moment = require('moment');
 
+const insidePurr = " <audio src='soundbank://soundlibrary/animals/amzn_sfx_cat_purr_01'/>";
+const outsidePurr = "<audio src='soundbank://soundlibrary/animals/amzn_sfx_cat_purr_02'/>";
+
+// populate config.json with your token and IDs
 const config = require('./config.json');
 
-// populate with your Sureflap API token
-const sureflapToken = config.token; // fs.readFileSync('sureflap.token', 'utf8');
-
-// populate with JSON to define your cat flap/room topology
-// see README for the format of this
-const flaps = config.flaps; // JSON.parse(fs.readFileSync('sureflap.flaps', 'utf8'));
-
-const sureflapURI = "/api/household/" + config.household + "/pet?with[]=position";
+const sureflapToken = config.token;
+const flaps = config.flaps;
 const authToken = 'Bearer ' + sureflapToken;
-
-var catdata;
-var cats = [];
 
 const sureFlapOptions = {
   hostname: "app.api.surehub.io",
-  path: sureflapURI,
+  path: "/api/household/" + config.household + "/pet?with[]=position",
   port: 443,
   method: 'GET',
   headers: {
@@ -29,23 +25,20 @@ const sureFlapOptions = {
   }
 };
 
-var sureFlapPostOptions = {
-  hostname: "app.api.surehub.io",
-  path: "/api/pet/<petid>/position",
-  port: 443,
-  method: 'POST',
-  headers: {
-    'Authorization': authToken
-  }
-};
+var catdata;
+var cats = [];
 
-var PORT = process.env.port || 8080;
+var PORT = config.port || 4040;
 var app = express();
 
 var alexaApp = new alexa.app("catflap");
 
 app.set("view engine", "ejs");
-app.set('trust proxy', '192.168.1.232') // specify a single subnet
+
+if (config.proxy_ip) {
+  console.log("Trusting proxy: " + config.proxy_ip)
+  app.set('trust proxy', config.proxy_ip)
+}
 
 alexaApp.express({
   expressApp: app,
@@ -60,7 +53,6 @@ alexaApp.express({
   debug: true
 });
 
-//
 
 alexaApp.launch(function(request, response) {
   console.log("launch");
@@ -98,13 +90,17 @@ alexaApp.intent('GetLocationOfCatIntent', {
     var cat = cats.find(x => x.name === catname);
     var since = moment(cat.since).fromNow(true);
 
-    var purr = " <audio src='soundbank://soundlibrary/animals/amzn_sfx_cat_purr_01'/>";
+    var purr = insidePurr;
 
     var inThe = ' has been in the ';
-    if (cat.location === "outside") {
+    if (cat.location === "outside" || cat.location === "inside") {
       inThe = ' has been ';
-      purr = "<audio src='soundbank://soundlibrary/animals/amzn_sfx_cat_purr_02'/>";
+
     }
+    if (cat.location === "outside") {
+      purr = outsidePurr;
+    }
+
     var speech = purr + ' ' + cat.name + inThe + cat.location + ' for ' + since + '.';
 
     console.log(speech);
@@ -152,12 +148,14 @@ alexaApp.intent('GetLongestDurationIntent', {
 
     var since = moment(cat.since).fromNow(true);
 
-    var purr = " <audio src='soundbank://soundlibrary/animals/amzn_sfx_cat_purr_01'/>";
+    var purr = insidePurr;
 
     var inThe = ' has been in the ';
-    if (cat.location === "outside") {
+    if (cat.location === "outside" || cat.location === "inside") {
       inThe = ' has been ';
-      purr = "<audio src='soundbank://soundlibrary/animals/amzn_sfx_cat_purr_02'/>";
+    }
+    if (cat.location === "outside") {
+      purr = outsidePurr;
     }
     var speech = purr + ' ' + cat.name + inThe + cat.location + ' for ' + since + '.';
 
@@ -168,6 +166,7 @@ alexaApp.intent('GetLongestDurationIntent', {
     return;
   }
 ); // GetLongestDurationIntent
+
 
 alexaApp.intent('GetCatsInLocationIntent', {
     "slots": {
@@ -211,7 +210,9 @@ alexaApp.intent('GetCatsInLocationIntent', {
       for (i = 0; i < cats_in_location.length - 1; i++) {
         speech += cats_in_location[i].name + ', ';
       }
-      speech += 'and ' + cats_in_location[cats_in_location.length - 1].name
+      speech = speech.replace(/,\s*$/, "");
+
+      speech += ' and ' + cats_in_location[cats_in_location.length - 1].name
       speech += ' are ';
     } else if (cats_in_location.length > 0) {
       speech += cats_in_location[cats_in_location.length - 1].name
@@ -237,6 +238,7 @@ alexaApp.intent('GetCatsInLocationIntent', {
     return;
   }
 ); // GetCatsInLocationIntent
+
 
 alexaApp.intent('GetCatInLocationDurationIntent', {
     "slots": {
@@ -265,11 +267,11 @@ alexaApp.intent('GetCatInLocationDurationIntent', {
     var since = moment(cat.since).fromNow(true);
 
     var inThe = ' has been in the ';
-    if (cat.location === "outside") {
+    if (cat.location === "outside" || cat.location === "inside") {
       inThe = ' has been ';
     }
     var speech = cat.name + inThe + cat.location + ' for ' + since + '.';
-    speech += " <audio src='soundbank://soundlibrary/animals/amzn_sfx_cat_purr_01'/>";
+
     console.log(speech);
     res.say(speech);
     res.send();
@@ -277,6 +279,7 @@ alexaApp.intent('GetCatInLocationDurationIntent', {
     return;
   }
 ); // GetCatInLocationDurationIntent
+
 
 alexaApp.intent('SetLocationOfCatIntent', {
     "slots": {
@@ -293,11 +296,24 @@ alexaApp.intent('SetLocationOfCatIntent', {
     var locationnames = get_matched_location(req);
     var catname = get_matched_cat(req);
 
-    // post data to set cat's location
-    const result = await httpPost(sureFlapOptions);
-    //catdata = result.data;
+    // get catflap data
+    const result = await httpGet(sureFlapOptions);
+    catdata = result.data;
 
-    var speech = "I've set " + catname + "'s status to " + locationnames[0] + '.';
+    // populate location data for each cat
+    cats = [];
+    catdata.forEach(getLocation);
+    var cat = cats.find(x => x.name === catname);
+
+    var pet_id = cat.id;
+    var where = 2;
+    if (locationnames[0] == "inside") {
+      where = 1;
+    }
+
+    const postResult = await httpPost(pet_id, where);
+
+    var speech = "Okay, " + catname + " is " + locationnames[0] + '.';
     console.log(speech);
     res.say(speech);
     res.send();
@@ -306,9 +322,15 @@ alexaApp.intent('SetLocationOfCatIntent', {
   }
 ); // SetLocationOfCatIntent
 
+
 function getLocation(pet) {
   let name = pet.name;
+
+  if (pet.position.device_id == null) {
+    pet.position.device_id = 0;
+  }
   var last_flap = flaps.find(x => x.id === pet.position.device_id);
+
   var location;
 
   if (pet.position.where == 1) {
@@ -320,7 +342,8 @@ function getLocation(pet) {
   var catInfo = {
     "name": pet.name,
     "location": location,
-    "since": pet.position.since
+    "since": pet.position.since,
+    "id": pet.id
   }
 
   cats.push(catInfo);
@@ -340,7 +363,7 @@ function get_matched_cat(request) {
   }
 
   return catname;
-}
+} // get_matched_cat(request)
 
 function get_matched_location(request) {
   var locationname = request.slots.locationname;
@@ -363,13 +386,13 @@ function get_matched_location(request) {
         locations.push("inside");
         locations.push("house");
         locations.push("garden room");
-        // TODO: make generic
+        // TODO: make generic (probably by allowing tagging of the json for inside/outside)
       }
     }
   }
 
   return locations;
-} //get_matched_cat(request)
+} //get_matched_location(request)
 
 
 function httpGet(options) {
@@ -398,33 +421,53 @@ function httpGet(options) {
   }));
 }
 
+function httpPost(pet_id, where) {
+  return new Promise(function(resolve, reject) {
 
-function httpPost(options) {
-  return new Promise(((resolve, reject) => {
-    const request = https.request(options, (response) => {
-      response.setEncoding('utf8');
+    var postData = querystring.stringify({
+      "since": new Date().toISOString(),
+      "where": where
+    });
+
+    var post_options = {
+      host: "app.api.surehub.io",
+      path: "/api/pet/" + pet_id + "/position", //22591
+      port: 443,
+      method: 'POST',
+      headers: {
+        'Authorization': authToken,
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Length': Buffer.byteLength(postData)
+      }
+    };
+
+    var post_req = https.request(post_options, function(res) {
+      res.setEncoding('utf8');
       let returnData = '';
 
       if (response.statusCode < 200 || response.statusCode >= 300) {
         return reject(new Error(`${response.statusCode}: ${response.req.getHeader('host')} ${response.req.path}`));
       }
 
-      response.on('data', (chunk) => {
+      res.on('data', function(chunk) {
         returnData += chunk;
+        //console.log('Response: ' + chunk);
       });
 
-      response.on('end', () => {
+      res.on('end', () => {
         resolve(JSON.parse(returnData));
       });
 
       response.on('error', (error) => {
         reject(error);
       });
-    });
-    request.end();
-  }));
-}
 
+    });
+
+    post_req.write(postData);
+    post_req.end();
+  });
+}
 
 app.listen(PORT);
 console.log("Listening on port " + PORT + ", try http://localhost:" + PORT + "/catflap");
