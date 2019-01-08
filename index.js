@@ -28,7 +28,8 @@ const sureFlapOptions = {
 var catdata;
 var cats = [];
 
-var PORT = config.port || 4040;
+var PORT = process.env.port || config.port || 8080;
+
 var app = express();
 
 var alexaApp = new alexa.app("catflap");
@@ -445,8 +446,8 @@ function httpPost(pet_id, where) {
       res.setEncoding('utf8');
       let returnData = '';
 
-      if (response.statusCode < 200 || response.statusCode >= 300) {
-        return reject(new Error(`${response.statusCode}: ${response.req.getHeader('host')} ${response.req.path}`));
+      if (res.statusCode < 200 || res.statusCode >= 300) {
+        return reject(new Error(`${res.statusCode}: ${res.req.getHeader('host')} ${res.req.path}`));
       }
 
       res.on('data', function(chunk) {
@@ -458,7 +459,7 @@ function httpPost(pet_id, where) {
         resolve(JSON.parse(returnData));
       });
 
-      response.on('error', (error) => {
+      res.on('error', (error) => {
         reject(error);
       });
 
