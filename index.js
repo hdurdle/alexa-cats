@@ -18,6 +18,7 @@ const moment = require('moment');
 const config = require('./config.json');
 const flaps = config.flaps;
 const authToken = 'Bearer ' + config.token;
+const insideLocations = ["house", "garage", "garden room"];
 
 const sureFlapGetOptions = {
     hostname: "app.api.surehub.io",
@@ -69,6 +70,13 @@ alexaApp.launch(function (request, response) {
     response.shouldEndSession(false);
 }); // launch
 
+alexaApp.pre = async function (request, response, type) {
+    logger.info("pre");
+    const result = await httpGet(sureFlapGetOptions);
+    sureFlapPetPositionData = result.data;
+    populateCats();
+
+};
 
 alexaApp.intent('GetLocationOfCatIntent', {
         "slots": {
@@ -86,15 +94,9 @@ alexaApp.intent('GetLocationOfCatIntent', {
     },
     async function (req, res) {
         logger.info("GetLocationOfCatIntent");
+
         const catName = getMatchedCat(req);
-
-        const result = await httpGet(sureFlapGetOptions);
-        sureFlapPetPositionData = result.data;
-
-        populateCats();
-
         const cat = locatedCatsData.find(x => x.name === catName);
-
         const speech = getSpeechForCat(cat, true);
 
         logger.info(speech);
@@ -116,19 +118,12 @@ alexaApp.intent('GetLongestDurationIntent', {
         logger.info("GetLongestDurationIntent");
 
         const locationNames = getMatchedLocation(req);
-        logger.info(locationNames);
 
-        // get catflap data
-        const result = await httpGet(sureFlapGetOptions);
-        sureFlapPetPositionData = result.data;
-
-        sureFlapPetPositionData = sureFlapPetPositionData.sort(function (a, b) {
-            const timeA = a.position.since;
-            const timeB = b.position.since;
+        locatedCatsData = locatedCatsData.sort(function (a, b) {
+            const timeA = a.since;
+            const timeB = b.since;
             return (timeA < timeB) ? -1 : (timeA > timeB) ? 1 : 0;
         });
-
-        populateCats();
 
         const catsInLocation = locatedCatsData.filter(function (item) {
             return locationNames.includes(item.location);
@@ -163,18 +158,12 @@ alexaApp.intent('GetCatsInLocationIntent', {
         logger.info("GetCatsInLocationIntent");
 
         const locationNames = getMatchedLocation(req);
-        logger.info(locationNames);
 
-        const result = await httpGet(sureFlapGetOptions);
-        sureFlapPetPositionData = result.data;
-
-        sureFlapPetPositionData = sureFlapPetPositionData.sort(function (a, b) {
+        locatedCatsData = locatedCatsData.sort(function (a, b) {
             const textA = a.name.toUpperCase();
             const textB = b.name.toUpperCase();
             return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
         });
-
-        populateCats();
 
         const catsInLocation = locatedCatsData.filter(function (item) {
             return locationNames.includes(item.location);
@@ -197,10 +186,10 @@ alexaApp.intent('GetCatsInLocationIntent', {
             speech = 'No kitties are ';
         }
 
+
+
         let inThe = '';
-        if (locationNames[0] === "house" ||
-            locationNames[0] === "garage" ||
-            locationNames[0] === "garden room") {
+        if ( insideLocations.includes(locationNames[0])) {
             inThe = "in the ";
         }
 
@@ -227,13 +216,8 @@ alexaApp.intent('GetCatInLocationDurationIntent', {
     },
     async function (req, res) {
         logger.info("GetCatInLocationDurationIntent");
+
         const catName = getMatchedCat(req);
-
-        const result = await httpGet(sureFlapGetOptions);
-        sureFlapPetPositionData = result.data;
-
-        populateCats();
-
         const cat = locatedCatsData.find(x => x.name === catName);
         const speech = getSpeechForCat(cat);
 
@@ -259,12 +243,6 @@ alexaApp.intent('SetLocationOfCatIntent', {
 
         const locationNames = getMatchedLocation(req);
         const catName = getMatchedCat(req);
-
-        const result = await httpGet(sureFlapGetOptions);
-        sureFlapPetPositionData = result.data;
-
-        populateCats();
-
         const cat = locatedCatsData.find(x => x.name === catName);
 
         const petID = cat.id;
@@ -333,8 +311,6 @@ function getLocation(pet) {
 
 function getMatchedCat(request) {
     let catName = request.slots["catname"];
-
-    logger.info(catName.confirmationStatus);
 
     if (catName) {
         if (catName.resolutions[0].status === "ER_SUCCESS_MATCH") {
