@@ -14,9 +14,6 @@ const querystring = require('querystring');
 const https = require('https');
 const moment = require('moment');
 
-const insidePurr = " <audio src='soundbank://soundlibrary/animals/amzn_sfx_cat_purr_01'/>";
-const outsidePurr = "<audio src='soundbank://soundlibrary/animals/amzn_sfx_cat_purr_02'/>";
-
 // populate config.json with your token and IDs
 const config = require('./config.json');
 const flaps = config.flaps;
@@ -32,9 +29,11 @@ const sureFlapGetOptions = {
     }
 };
 
+const insidePurr = " <audio src='soundbank://soundlibrary/animals/amzn_sfx_cat_purr_01'/>";
+const outsidePurr = "<audio src='soundbank://soundlibrary/animals/amzn_sfx_cat_purr_02'/>";
 
-let catData;
-let cats = [];
+let sureFlapPetPositionData;
+let locatedCatsData = [];
 
 winston.level = process.env.LOG_LEVEL || config.logLevel || 'info';
 const PORT = process.env.port || config.port || 8080;
@@ -90,11 +89,11 @@ alexaApp.intent('GetLocationOfCatIntent', {
         const catName = getMatchedCat(req);
 
         const result = await httpGet(sureFlapGetOptions);
-        catData = result.data;
+        sureFlapPetPositionData = result.data;
 
         populateCats();
 
-        const cat = cats.find(x => x.name === catName);
+        const cat = locatedCatsData.find(x => x.name === catName);
 
         const speech = getSpeechForCat(cat, true);
 
@@ -121,9 +120,9 @@ alexaApp.intent('GetLongestDurationIntent', {
 
         // get catflap data
         const result = await httpGet(sureFlapGetOptions);
-        catData = result.data;
+        sureFlapPetPositionData = result.data;
 
-        catData = catData.sort(function (a, b) {
+        sureFlapPetPositionData = sureFlapPetPositionData.sort(function (a, b) {
             const timeA = a.position.since;
             const timeB = b.position.since;
             return (timeA < timeB) ? -1 : (timeA > timeB) ? 1 : 0;
@@ -131,7 +130,7 @@ alexaApp.intent('GetLongestDurationIntent', {
 
         populateCats();
 
-        const catsInLocation = cats.filter(function (item) {
+        const catsInLocation = locatedCatsData.filter(function (item) {
             return locationNames.includes(item.location);
         });
 
@@ -167,9 +166,9 @@ alexaApp.intent('GetCatsInLocationIntent', {
         logger.info(locationNames);
 
         const result = await httpGet(sureFlapGetOptions);
-        catData = result.data;
+        sureFlapPetPositionData = result.data;
 
-        catData = catData.sort(function (a, b) {
+        sureFlapPetPositionData = sureFlapPetPositionData.sort(function (a, b) {
             const textA = a.name.toUpperCase();
             const textB = b.name.toUpperCase();
             return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
@@ -177,7 +176,7 @@ alexaApp.intent('GetCatsInLocationIntent', {
 
         populateCats();
 
-        const catsInLocation = cats.filter(function (item) {
+        const catsInLocation = locatedCatsData.filter(function (item) {
             return locationNames.includes(item.location);
         });
 
@@ -231,11 +230,11 @@ alexaApp.intent('GetCatInLocationDurationIntent', {
         const catName = getMatchedCat(req);
 
         const result = await httpGet(sureFlapGetOptions);
-        catData = result.data;
+        sureFlapPetPositionData = result.data;
 
         populateCats();
 
-        const cat = cats.find(x => x.name === catName);
+        const cat = locatedCatsData.find(x => x.name === catName);
         const speech = getSpeechForCat(cat);
 
         logger.info(speech);
@@ -262,11 +261,11 @@ alexaApp.intent('SetLocationOfCatIntent', {
         const catName = getMatchedCat(req);
 
         const result = await httpGet(sureFlapGetOptions);
-        catData = result.data;
+        sureFlapPetPositionData = result.data;
 
         populateCats();
 
-        const cat = cats.find(x => x.name === catName);
+        const cat = locatedCatsData.find(x => x.name === catName);
 
         const petID = cat.id;
         let where = 2;
@@ -303,8 +302,8 @@ function getSpeechForCat(cat, shouldPurr = false) {
 }
 
 function populateCats() {
-    cats = [];
-    catData.forEach(getLocation);
+    locatedCatsData = [];
+    sureFlapPetPositionData.forEach(getLocation);
 }
 
 function getLocation(pet) {
@@ -329,7 +328,7 @@ function getLocation(pet) {
         "id": pet.id
     };
 
-    cats.push(catInfo);
+    locatedCatsData.push(catInfo);
 } // getLocation(pet)
 
 function getMatchedCat(request) {
