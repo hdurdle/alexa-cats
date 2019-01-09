@@ -332,7 +332,9 @@ function getLocation(pet) {
 } // getLocation(pet)
 
 function getMatchedCat(request) {
-    let catName = request.slots.catname;
+    let catName = request.slots["catname"];
+
+    logger.info(catName.confirmationStatus);
 
     if (catName) {
         if (catName.resolutions[0].status === "ER_SUCCESS_MATCH") {
@@ -348,8 +350,10 @@ function getMatchedCat(request) {
 } // getMatchedCat(request)
 
 function getMatchedLocation(request) {
-    const locationName = request.slots.locationname;
-    const inOut = request.slots.inout;
+
+    const locationName = request.slots["locationname"];
+    const inOut = request.slots["inout"];
+
     const locations = [];
 
     if (locationName && locationName.resolutions.length > 0) {
