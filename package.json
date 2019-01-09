@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "Node.js Web Service for Alexa Skill to say where cats are based on Sureflap data",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "start": "node index.js"
+  },
   "keywords": [],
   "author": "Howard Durdle <howard@durdle.com>",
   "license": "GPL-3.0-only",
