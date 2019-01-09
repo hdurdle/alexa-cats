@@ -64,3 +64,4 @@ typings/
 sureflap.flaps
 sureflap.token
 config.json
+.idea
