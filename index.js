@@ -74,8 +74,15 @@ alexaApp.pre = async function (request, response, type) {
     logger.info("pre");
     const result = await httpGet(sureFlapGetOptions);
     sureFlapPetPositionData = result.data;
-    populateCats();
+    await populateCats();
+};
 
+alexaApp.post = function(request, response, type, exception) {
+    if (exception) {
+        // always turn an exception into a successful response
+        logger.info("Ex:" + exception);
+        return response.clear().say("Aw. Badness.").send();
+    }
 };
 
 alexaApp.intent('GetLocationOfCatIntent', {
@@ -280,8 +287,10 @@ function getSpeechForCat(cat, shouldPurr = false) {
 }
 
 function populateCats() {
+    logger.info("start:populateCats");
     locatedCatsData = [];
     sureFlapPetPositionData.forEach(getLocation);
+    logger.info("end:populateCats");
 }
 
 function getLocation(pet) {
