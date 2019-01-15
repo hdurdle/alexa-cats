@@ -8,8 +8,7 @@ const logger = winston.createLogger({
     transports: [new winston.transports.Console()]
 });
 
-const express = require("express");
-const alexa = require('alexa-app');
+var alexa = require('alexa-app');
 const querystring = require('querystring');
 const https = require('https');
 const moment = require('moment');
@@ -37,32 +36,13 @@ let sureFlapPetPositionData;
 let locatedCatsData = [];
 
 winston.level = process.env.LOG_LEVEL || config.logLevel || 'info';
-const PORT = process.env.port || config.port || 8080;
 
-const app = express();
+var alexaApp = new alexa.app("catflap");
 
-const alexaApp = new alexa.app("catflap");
+// Allow this module to be reloaded by hotswap when changed
+module.change_code = 1;
 
-app.set("view engine", "ejs");
-
-if (config.proxyIP) {
-    logger.info("Trusting proxy: " + config.proxyIP);
-    app.set('trust proxy', config.proxyIP)
-}
-
-alexaApp.express({
-    expressApp: app,
-
-    // verifies requests come from amazon alexa. Must be enabled for production.
-    // You can disable this if you're running a dev environment and want to POST
-    // things to test behavior. enabled by default.
-    checkCert: true,
-
-    // sets up a GET route when set to true. This is handy for testing in
-    // development, but not recommended for production. disabled by default
-    debug: true
-});
-
+alexaApp.id = require('./package.json').alexa.applicationId;
 
 alexaApp.launch(function (request, response) {
     logger.info("launch");
@@ -91,10 +71,10 @@ alexaApp.intent('GetLocationOfCatIntent', {
         },
         "utterances": [
             "where's {catname}",
-            "Is {catname} outside",
-            "Is {catname} at home",
-            "Is {catname} out",
-            "Is {catname} in",
+            "is {catname} outside",
+            "is {catname} at home",
+            "is {catname} out",
+            "is {catname} in",
             "where is {catname}",
             "where {catname} is"
         ]
@@ -112,13 +92,13 @@ alexaApp.intent('GetLocationOfCatIntent', {
     }
 ); //GetLocationOfCatIntent
 
-
 alexaApp.intent('GetLongestDurationIntent', {
         "slots": {
             "inout": "InOut"
         },
         "utterances": [
-            "who has been {inout} the longest"
+            "who has been {inout} the longest",
+            "who's been {inout} the longest"
         ]
     },
     async function (req, res) {
@@ -148,7 +128,6 @@ alexaApp.intent('GetLongestDurationIntent', {
     }
 ); // GetLongestDurationIntent
 
-
 alexaApp.intent('GetCatsInLocationIntent', {
         "slots": {
             "locationname": "PetLocation",
@@ -157,6 +136,7 @@ alexaApp.intent('GetCatsInLocationIntent', {
         "utterances": [
             "who is {inout}",
             "who is in the {locationname}",
+            "who's in the {locationname}",
             "who is at {inout}",
             "who is {locationname}"
         ]
@@ -193,8 +173,6 @@ alexaApp.intent('GetCatsInLocationIntent', {
             speech = 'No kitties are ';
         }
 
-
-
         let inThe = '';
         if ( insideLocations.includes(locationNames[0])) {
             inThe = "in the ";
@@ -208,7 +186,6 @@ alexaApp.intent('GetCatsInLocationIntent', {
         res.send();
     }
 ); // GetCatsInLocationIntent
-
 
 alexaApp.intent('GetCatInLocationDurationIntent', {
         "slots": {
@@ -234,7 +211,6 @@ alexaApp.intent('GetCatInLocationDurationIntent', {
         res.send();
     }
 ); // GetCatInLocationDurationIntent
-
 
 alexaApp.intent('SetLocationOfCatIntent', {
         "slots": {
@@ -294,7 +270,6 @@ function populateCats() {
 }
 
 function getLocation(pet) {
-
     if (!pet.position.device_id) {
         pet.position.device_id = 0;
     }
@@ -352,9 +327,12 @@ function getMatchedLocation(request) {
             if (inOut.resolutions[0].values[0].name === "out") {
                 locations.push("outside");
             } else {
-                locations.push("inside");
-                locations.push("house");
-                locations.push("garden room");
+                flaps.forEach(function(flap) {
+                    locations.push(flap["in"]);
+                });
+//                locations.push("inside");
+//                locations.push("house");
+//                locations.push("garden room");
                 // TODO: make generic (probably by allowing tagging of the json for inside/outside)
             }
         }
@@ -362,7 +340,6 @@ function getMatchedLocation(request) {
 
     return locations;
 } //getMatchedLocation(request)
-
 
 function httpGet(options) {
     return new Promise(((resolve, reject) => {
@@ -437,5 +414,4 @@ function httpPost(petID, where) {
     });
 }
 
-app.listen(PORT);
-console.log("Listening on port " + PORT + ", try http://localhost:" + PORT + "/catflap");
+module.exports = alexaApp;

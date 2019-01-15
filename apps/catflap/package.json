@@ -1,0 +1,26 @@
+{
+  "name": "alexa-cats",
+  "version": "1.0.0",
+  "description": "Node.js Web Service for Alexa Skill to say where cats are based on Sureflap data",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [],
+  "author": "Howard Durdle <howard@durdle.com>",
+  "license": "GPL-3.0-only",
+  "alexa": {
+    "applicationId": "amzn1.ask.skill.b9760897-db72-4dca-83a3-7c4e8f9dcbbf"
+  },
+  "dependencies": {
+    "alexa-app": "^4.2.3",
+    "alexa-app-server": "^3.0.2",
+    "ejs": "^2.3.1",
+    "express": "^4.13.0",
+    "moment": "^2.23.0",
+    "querystring": "^0.2.0",
+    "request": "^2.88.0",
+    "request-promise": "^4.2.2",
+    "winston": "^3.1.0"
+  }
+}

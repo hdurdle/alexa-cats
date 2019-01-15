@@ -1,22 +1,24 @@
 {
   "name": "alexa-cats",
   "version": "1.0.0",
-  "description": "Node.js Web Service for Alexa Skill to say where cats are based on Sureflap data",
-  "main": "index.js",
-  "scripts": {
-    "start": "node index.js"
-  },
-  "keywords": [],
-  "author": "Howard Durdle <howard@durdle.com>",
-  "license": "GPL-3.0-only",
+  "description": "",
+  "main": "server.js",
   "dependencies": {
-    "alexa-app": "^4.2.3",
-    "ejs": "^2.3.1",
-    "express": "^4.13.0",
-    "moment": "^2.23.0",
-    "querystring": "^0.2.0",
-    "request": "^2.88.0",
-    "request-promise": "^4.2.2",
-    "winston": "^3.1.0"
-  }
+    "alexa-app-server": "^3.0.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hdurdle/alexa-cats.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hdurdle/alexa-cats/issues"
+  },
+  "homepage": "https://github.com/hdurdle/alexa-cats#readme"
 }
