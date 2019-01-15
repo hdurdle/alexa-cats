@@ -7,6 +7,13 @@ RUN apk --no-cache add tar curl && \
   npm install --production && \
   rm -rf /tmp/* /root/.npm
 
+WORKDIR /app/apps/catflap
+
+RUN npm install --production && \
+  rm -rf /tmp/* /root/.npm
+
+WORKDIR /app
+
 EXPOSE 8080
 
 USER node
