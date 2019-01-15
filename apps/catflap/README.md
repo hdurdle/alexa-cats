@@ -1,9 +1,9 @@
-# alexa-cats
+# catflap
 Node.js Web Service for Alexa Skill to say where cats are based on Sureflap data
 
 The device in question: https://www.surepetcare.com/en-gb/pet-doors/microchip-pet-door-connect
 
-This is the custom Web Service that acts as the endpoint for an Alexa Skill.
+This is the alexa-app that acts as the endpoint for an Alexa Skill.
 
 ### Demo
 
@@ -14,7 +14,7 @@ Create a `config.json` based on the `-dist` copy in the repo, and put your SureF
 
 You'll also need to add your Sureflap household ID, and the topology of your catflaps.
 
-By default it will expose a page on `http://localhost:8080/catflap` which will list the information you need to populate the Alexa Skill (intents, utterances, slots).
+By default it will expose a page on `http://localhost:8080/alexa/catflap` which will list the information you need to populate the Alexa Skill (intents, utterances, slots).
 
 #### Cat Flap Topology
 
@@ -44,7 +44,7 @@ for example:
   },
 ```
 
-leave the final `"id": 0` item. This makes sure it works when you've manually set pet's inside/outside state. (When you set state manually through the SureFlap app, the pet object has no device_id for last cat flap they used.)
+leave the first `"id": 0` item. This makes sure it works when you've manually set pet's inside/outside state. (When you set state manually through the SureFlap app, the pet object has no device_id for last cat flap they used.)
 
 ### Docker
 
@@ -57,11 +57,11 @@ leave the final `"id": 0` item. This makes sure it works when you've manually se
       - 4040:8080
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - /path/to/alexa-cats/config.json:/app/config.json
+      - /path/to/catflap/config.json:/app/apps/catflap/config.json
 ```
 
 #### TODO
 
-* Some serious refactoring of duplicated code.
 * Set curfew for cats ("Alexa, tell cat flap to keep Ezio in the house")
 * Lock/unlock some/all flaps
+* Get battery status
