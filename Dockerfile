@@ -12,6 +12,6 @@ EXPOSE 8080
 USER node
 
 HEALTHCHECK --interval=1m --timeout=2s \
-  CMD curl -LSs http://localhost:8080/catflap || exit 1
+  CMD curl -LSs http://localhost:8080/alexa/catflap?schema || exit 1
 
-CMD ["node", "index.js"]
+CMD ["node", "server.js"]
