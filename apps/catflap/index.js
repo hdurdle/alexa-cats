@@ -16,6 +16,7 @@ const moment = require('moment');
 // populate config.json with your token and IDs
 const config = require('./config.json');
 const flaps = config.flaps;
+const catdobs = config.catdobs;
 const authToken = 'Bearer ' + config.token;
 const insideLocations = ["house", "garage", "garden room"];
 
@@ -57,13 +58,95 @@ alexaApp.pre = async function (request, response, type) {
     await populateCats();
 };
 
-alexaApp.post = function(request, response, type, exception) {
+alexaApp.post = function (request, response, type, exception) {
     if (exception) {
         // always turn an exception into a successful response
         logger.info("Ex:" + exception);
         return response.clear().say("Aw. Badness.").send();
     }
 };
+
+alexaApp.intent('GetAgeOfCatIntent', {
+        "slots": {
+            "catname": "PetName"
+        },
+        "utterances": [
+            "how old is {catname}",
+            "how old {catname} is"
+        ]
+    },
+    async function (req, res) {
+        logger.info("GetAgeOfCatIntent");
+
+        const catName = getMatchedCat(req);
+
+        const catDetail = catdobs.find(x => x.name === catName);
+        logger.info(catDetail);
+
+        const speech = getAgeSpeechForCat(catDetail);
+
+        logger.info(speech);
+        res.say(speech);
+        res.send();
+    }
+); // GetAgeOfCatIntent
+
+function getAgeSpeechForCat(catDetail) {
+
+    var dob = moment(catDetail["dob"]);
+    var now = moment();
+    var years = now.diff(dob, 'year');
+    dob.add(years, 'years');
+    var months = now.diff(dob, 'months');
+    dob.add(months, 'months');
+    var days = now.diff(dob, 'days');
+
+    var birthday = false;
+
+    var speech = catDetail.name + " is ";
+
+    if (years > 0) {
+        if (months < 1 && days < 1) {
+            speech += "exactly ";
+            birthday = true;
+        }
+        if (years === 1) {
+            speech += years + ' year';
+        } else {
+            speech += years + ' years';
+        }
+    }
+    if (months > 0) {
+        if (years > 0) {
+            speech += ", ";
+        }
+        if (years < 1 && days < 1) {
+            speech += "exactly ";
+        }
+        if (months === 1) {
+            speech += months + ' month';
+        } else {
+            speech += months + ' months';
+        }
+    }
+    if (days > 0) {
+        if (months > 0 || years > 0) {
+            speech += " and ";
+        }
+        if (days === 1) {
+            speech += days + ' day';
+        } else {
+            speech += days + ' days';
+        }
+    }
+
+    speech += " old.";
+    if (birthday) {
+        speech += " Happy Birthday " + catDetail.name + "!";
+    }
+
+    return speech;
+}
 
 alexaApp.intent('GetLocationOfCatIntent', {
         "slots": {
@@ -174,7 +257,7 @@ alexaApp.intent('GetCatsInLocationIntent', {
         }
 
         let inThe = '';
-        if ( insideLocations.includes(locationNames[0])) {
+        if (insideLocations.includes(locationNames[0])) {
             inThe = "in the ";
         }
 
@@ -294,7 +377,10 @@ function getLocation(pet) {
 } // getLocation(pet)
 
 function getMatchedCat(request) {
+    logger.info("getMatchedCat");
     let catName = request.slots["catname"];
+
+    logger.info(catName);
 
     if (catName) {
         if (catName.resolutions[0].status === "ER_SUCCESS_MATCH") {
@@ -327,7 +413,7 @@ function getMatchedLocation(request) {
             if (inOut.resolutions[0].values[0].name === "out") {
                 locations.push("outside");
             } else {
-                flaps.forEach(function(flap) {
+                flaps.forEach(function (flap) {
                     locations.push(flap["in"]);
                 });
 //                locations.push("inside");

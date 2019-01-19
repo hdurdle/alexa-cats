@@ -15,5 +15,11 @@
       "out": "outside",
       "name": "back door"
     }
+  ],
+  "catdobs": [
+    {
+      "name": "Garfield",
+      "dob": "1978-06-19"
+    }
   ]
 }
