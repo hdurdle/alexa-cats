@@ -30,10 +30,21 @@ const sureFlapGetOptions = {
     }
 };
 
+const sureFlapGetBatteryOptions = {
+    hostname: "app.api.surehub.io",
+    path: "/api/device?with[]=children&with[]=status&with[]=control",
+    port: 443,
+    method: 'GET',
+    headers: {
+        'Authorization': authToken
+    }
+};
+
 const insidePurr = " <audio src='soundbank://soundlibrary/animals/amzn_sfx_cat_purr_01'/>";
 const outsidePurr = "<audio src='soundbank://soundlibrary/animals/amzn_sfx_cat_purr_02'/>";
 
 let sureFlapPetPositionData;
+let sureFlapDeviceData;
 let locatedCatsData = [];
 
 winston.level = process.env.LOG_LEVEL || config.logLevel || 'info';
@@ -53,8 +64,10 @@ alexaApp.launch(function (request, response) {
 
 alexaApp.pre = async function (request, response, type) {
     logger.info("pre");
-    const result = await httpGet(sureFlapGetOptions);
+    var result = await httpGet(sureFlapGetOptions);
     sureFlapPetPositionData = result.data;
+    result = await httpGet(sureFlapGetBatteryOptions);
+    sureFlapDeviceData = result.data;
     await populateCats();
 };
 
@@ -148,6 +161,50 @@ function getAgeSpeechForCat(catDetail) {
     return speech;
 }
 
+
+alexaApp.intent('GetDeviceStatusIntent', {
+        "utterances": [
+            "about battery",
+            "about batteries",
+            "is the battery okay",
+            "how are the batteries",
+            "for device status",
+            "for status"
+        ]
+    },
+    async function (req, res) {
+        logger.info("GetDeviceStatusIntent");
+        var speech = '';
+
+        const BATTERY_THRESHOLD = 5.2;
+
+        var lowBatteryFlaps = sureFlapDeviceData.filter(x => x.status["battery"] < BATTERY_THRESHOLD);
+        var okayFlaps = sureFlapDeviceData.filter(x => x.status["battery"] >= BATTERY_THRESHOLD);
+
+        if (lowBatteryFlaps.length > 1) {
+
+            for (let i = 0; i < lowBatteryFlaps.length - 1; i++) {
+                speech += lowBatteryFlaps[i].name + ', ';
+            }
+            speech = speech.replace(/,\s*$/, "");
+
+            speech += ' and ' + lowBatteryFlaps[lowBatteryFlaps.length - 1].name;
+            speech += ' batteries are low.';
+        } else if (lowBatteryFlaps.length > 0) {
+            speech += lowBatteryFlaps[lowBatteryFlaps.length - 1].name;
+            speech += ' battery is low.';
+        }
+
+        if (okayFlaps.length === 3) {
+            speech = "All the batteries are okay."
+        }
+
+        logger.info(speech);
+        res.say(speech);
+        res.send();
+    }
+); //GetDeviceStatusIntent
+
 alexaApp.intent('GetLocationOfCatIntent', {
         "slots": {
             "catname": "PetName"
@@ -166,8 +223,17 @@ alexaApp.intent('GetLocationOfCatIntent', {
         logger.info("GetLocationOfCatIntent");
 
         const catName = getMatchedCat(req);
-        const cat = locatedCatsData.find(x => x.name === catName);
-        const speech = getSpeechForCat(cat, true);
+
+        var speech;
+
+        if (catName) {
+            const cat = locatedCatsData.find(x => x.name === catName);
+
+            speech = getSpeechForCat(cat, true);
+        } else {
+            logger.info("Couldn't find that cat.")
+            speech = "Sorry, I don't recognise that cat.";
+        }
 
         logger.info(speech);
         res.say(speech);
@@ -309,17 +375,28 @@ alexaApp.intent('SetLocationOfCatIntent', {
 
         const locationNames = getMatchedLocation(req);
         const catName = getMatchedCat(req);
-        const cat = locatedCatsData.find(x => x.name === catName);
 
-        const petID = cat.id;
-        let where = 2;
-        if (locationNames[0] === "inside") {
-            where = 1;
+        var speech;
+
+        if (catName) {
+            const cat = locatedCatsData.find(x => x.name === catName);
+
+            const petID = cat.id;
+            let where = 2;
+            if (locationNames[0] === "inside") {
+                where = 1;
+            }
+
+            await httpPost(petID, where);
+
+            speech = "Okay, " + catName + " is " + locationNames[0] + '.';
+
+        } else {
+            logger.info("Couldn't find that cat.")
+            speech = "Sorry, I don't recognise that cat.";
         }
 
-        await httpPost(petID, where);
 
-        const speech = "Okay, " + catName + " is " + locationNames[0] + '.';
         logger.info(speech);
         res.say(speech);
         res.send();
@@ -385,8 +462,8 @@ function getMatchedCat(request) {
     if (catName) {
         if (catName.resolutions[0].status === "ER_SUCCESS_MATCH") {
             catName = catName.resolutions[0].values[0].name;
-        } else {
-            catName = catName.value;
+        } else if (catName.resolutions[0].status === "ER_SUCCESS_NO_MATCH") {
+            catName = null;
         }
     } else {
         catName = null
