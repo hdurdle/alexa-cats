@@ -1,5 +1,5 @@
 const winston = require('winston');
-const {combine, timestamp, prettyPrint} = winston.format;
+const { combine, timestamp, prettyPrint } = winston.format;
 const logger = winston.createLogger({
     format: combine(
         timestamp(),
@@ -9,7 +9,6 @@ const logger = winston.createLogger({
 });
 
 var alexa = require('alexa-app');
-const querystring = require('querystring');
 const https = require('https');
 const moment = require('moment');
 
@@ -22,7 +21,7 @@ const insideLocations = ["house", "garage", "garden room"];
 
 const sureFlapGetOptions = {
     hostname: "app.api.surehub.io",
-    path: "/api/household/" + config.household + "/pet?with[]=position",
+    path: "/api/household/" + config.household + "/pet?with[]=position&with[]=tag",
     port: 443,
     method: 'GET',
     headers: {
@@ -80,14 +79,14 @@ alexaApp.post = function (request, response, type, exception) {
 };
 
 alexaApp.intent('GetAgeOfCatIntent', {
-        "slots": {
-            "catname": "PetName"
-        },
-        "utterances": [
-            "how old is {catname}",
-            "how old {catname} is"
-        ]
+    "slots": {
+        "catname": "PetName"
     },
+    "utterances": [
+        "how old is {catname}",
+        "how old {catname} is"
+    ]
+},
     async function (req, res) {
         logger.info("GetAgeOfCatIntent");
 
@@ -163,15 +162,15 @@ function getAgeSpeechForCat(catDetail) {
 
 
 alexaApp.intent('GetDeviceStatusIntent', {
-        "utterances": [
-            "about battery",
-            "about batteries",
-            "is the battery okay",
-            "how are the batteries",
-            "for device status",
-            "for status"
-        ]
-    },
+    "utterances": [
+        "about battery",
+        "about batteries",
+        "is the battery okay",
+        "how are the batteries",
+        "for device status",
+        "for status"
+    ]
+},
     async function (req, res) {
         logger.info("GetDeviceStatusIntent");
         var speech = '';
@@ -206,19 +205,19 @@ alexaApp.intent('GetDeviceStatusIntent', {
 ); //GetDeviceStatusIntent
 
 alexaApp.intent('GetLocationOfCatIntent', {
-        "slots": {
-            "catname": "PetName"
-        },
-        "utterances": [
-            "where's {catname}",
-            "is {catname} outside",
-            "is {catname} at home",
-            "is {catname} out",
-            "is {catname} in",
-            "where is {catname}",
-            "where {catname} is"
-        ]
+    "slots": {
+        "catname": "PetName"
     },
+    "utterances": [
+        "where's {catname}",
+        "is {catname} outside",
+        "is {catname} at home",
+        "is {catname} out",
+        "is {catname} in",
+        "where is {catname}",
+        "where {catname} is"
+    ]
+},
     async function (req, res) {
         logger.info("GetLocationOfCatIntent");
 
@@ -242,14 +241,14 @@ alexaApp.intent('GetLocationOfCatIntent', {
 ); //GetLocationOfCatIntent
 
 alexaApp.intent('GetLongestDurationIntent', {
-        "slots": {
-            "inout": "InOut"
-        },
-        "utterances": [
-            "who has been {inout} the longest",
-            "who's been {inout} the longest"
-        ]
+    "slots": {
+        "inout": "InOut"
     },
+    "utterances": [
+        "who has been {inout} the longest",
+        "who's been {inout} the longest"
+    ]
+},
     async function (req, res) {
         logger.info("GetLongestDurationIntent");
 
@@ -278,18 +277,18 @@ alexaApp.intent('GetLongestDurationIntent', {
 ); // GetLongestDurationIntent
 
 alexaApp.intent('GetCatsInLocationIntent', {
-        "slots": {
-            "locationname": "PetLocation",
-            "inout": "InOut"
-        },
-        "utterances": [
-            "who is {inout}",
-            "who is in the {locationname}",
-            "who's in the {locationname}",
-            "who is at {inout}",
-            "who is {locationname}"
-        ]
+    "slots": {
+        "locationname": "PetLocation",
+        "inout": "InOut"
     },
+    "utterances": [
+        "who is {inout}",
+        "who is in the {locationname}",
+        "who's in the {locationname}",
+        "who is at {inout}",
+        "who is {locationname}"
+    ]
+},
     async function (req, res) {
         logger.info("GetCatsInLocationIntent");
 
@@ -337,16 +336,16 @@ alexaApp.intent('GetCatsInLocationIntent', {
 ); // GetCatsInLocationIntent
 
 alexaApp.intent('GetCatInLocationDurationIntent', {
-        "slots": {
-            "catname": "PetName",
-            "inout": "InOut"
-        },
-        "utterances": [
-            "when did {catname} come {inout}",
-            "when did {catname} go {inout}",
-            "how long has {catname} been {inout}"
-        ]
+    "slots": {
+        "catname": "PetName",
+        "inout": "InOut"
     },
+    "utterances": [
+        "when did {catname} come {inout}",
+        "when did {catname} go {inout}",
+        "how long has {catname} been {inout}"
+    ]
+},
     async function (req, res) {
         logger.info("GetCatInLocationDurationIntent");
 
@@ -362,14 +361,14 @@ alexaApp.intent('GetCatInLocationDurationIntent', {
 ); // GetCatInLocationDurationIntent
 
 alexaApp.intent('SetLocationOfCatIntent', {
-        "slots": {
-            "catname": "PetName",
-            "inout": "InOut"
-        },
-        "utterances": [
-            "{catname} is {inout}"
-        ]
+    "slots": {
+        "catname": "PetName",
+        "inout": "InOut"
     },
+    "utterances": [
+        "{catname} is {inout}"
+    ]
+},
     async function (req, res) {
         logger.info("SetLocationOfCatIntent");
 
@@ -382,12 +381,36 @@ alexaApp.intent('SetLocationOfCatIntent', {
             const cat = locatedCatsData.find(x => x.name === catName);
 
             const petID = cat.id;
-            let where = 2;
+            var where;
             if (locationNames[0] === "inside") {
                 where = 1;
+            } else {
+                where = 2;
             }
 
-            await httpPost(petID, where);
+            var postObject = {
+                "data": {},
+                "options": {}
+            }
+
+            postObject.data = JSON.stringify({
+                "since": new Date().toISOString(),
+                "where": where
+            });
+
+            postObject.options = {
+                host: "app.api.surehub.io",
+                path: "/api/pet/" + petID + "/position",
+                port: 443,
+                method: 'POST',
+                headers: {
+                    'Authorization': authToken,
+                    'Content-Type': 'application/json',
+                    'Content-Length': Buffer.byteLength(postObject.data)
+                }
+            };
+
+            await httpPost(postObject);
 
             speech = "Okay, " + catName + " is " + locationNames[0] + '.';
 
@@ -403,6 +426,98 @@ alexaApp.intent('SetLocationOfCatIntent', {
 
     }
 ); // SetLocationOfCatIntent
+
+
+
+alexaApp.intent('SetCatPermissionIntent', {
+    "slots": {
+        "catname": "PetName",
+        "inout": "InOut"
+    },
+    "utterances": [
+        "to keep {catname} {inout}",
+        "to let {catname} {inout}"
+    ]
+},
+    async function (req, res) {
+        logger.info("SetCatPermissionIntent");
+
+        const locationNames = getMatchedLocation(req);
+        logger.info(locationNames[0]);
+        const catName = getMatchedCat(req);
+
+        var speech;
+
+        if (catName) {
+            const cat = locatedCatsData.find(x => x.name === catName);
+
+            const tagId = cat.tag_id;
+            var where, permission;
+            if (locationNames[0] === "inside") {
+                where = 3; // kept in
+                permission = "will be kept in.";
+            } else {
+                where = 2; // allowed out
+                permission = "is allowed out.";
+            }
+
+            const curfewFlaps = flaps.filter(function (el) {
+                return el.curfew;
+            });
+
+            logger.info(curfewFlaps)
+
+            curfewFlaps.forEach(async function (flap) {
+
+                logger.info(flap)
+                logger.info("Setting permission on " + flap.name);
+
+                flapId = flap.id;
+
+                var postObject = {
+                    "data": {},
+                    "options": {}
+                }
+
+                postObject.data = JSON.stringify({
+                    "profile": where
+                });
+
+                logger.info(postObject.data);
+
+                postObject.options = {
+                    host: "app.api.surehub.io",
+                    path: "/api/device/" + flapId + "/tag/" + tagId,
+                    port: 443,
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': authToken,
+                        'Content-Type': 'application/json',
+                        'Content-Length': Buffer.byteLength(postObject.data)
+                    }
+                };
+
+                logger.info(postObject.options.path);
+
+                var result = await httpPost(postObject);
+                logger.info(result);
+
+            });
+
+            speech = "Okay, " + catName + " " + permission;
+
+        } else {
+            logger.info("Couldn't find that cat.")
+            speech = "Sorry, I don't recognise that cat.";
+        }
+
+        logger.info(speech);
+        res.say(speech);
+        res.send();
+    }
+); // SetCatPermissionIntent
+
+
 
 function getSpeechForCat(cat, shouldPurr = false) {
 
@@ -427,9 +542,14 @@ function populateCats() {
     locatedCatsData = [];
     sureFlapPetPositionData.forEach(getLocation);
     logger.info("end:populateCats");
+    logger.info(sureFlapPetPositionData)
 }
 
 function getLocation(pet) {
+    if (!pet || !pet.position) {
+        logger.info("No pet to getLocation for");
+        return;
+    };
     if (!pet.position.device_id) {
         pet.position.device_id = 0;
     }
@@ -447,10 +567,19 @@ function getLocation(pet) {
         "name": pet.name,
         "location": location,
         "since": pet.position.since,
-        "id": pet.id
+        "id": pet.id,
+        "tag_id": pet.tag.id
     };
 
-    locatedCatsData.push(catInfo);
+    const catDetail = catdobs.find(x => x.name === pet.name);
+    if (catDetail.dod) {
+        // don't add
+    }
+    else {
+        locatedCatsData.push(catInfo);
+    }
+
+
 } // getLocation(pet)
 
 function getMatchedCat(request) {
@@ -493,10 +622,6 @@ function getMatchedLocation(request) {
                 flaps.forEach(function (flap) {
                     locations.push(flap["in"]);
                 });
-//                locations.push("inside");
-//                locations.push("house");
-//                locations.push("garden room");
-                // TODO: make generic (probably by allowing tagging of the json for inside/outside)
             }
         }
     }
@@ -530,27 +655,13 @@ function httpGet(options) {
     }));
 }
 
-function httpPost(petID, where) {
+function httpPost(postObject) {
     return new Promise(function (resolve, reject) {
 
-        const sureFlapPostData = querystring.stringify({
-            "since": new Date().toISOString(),
-            "where": where
-        });
+        var postOptions = postObject.options;
+        var postData = postObject.data;
 
-        const sureFlapPostOptions = {
-            host: "app.api.surehub.io",
-            path: "/api/pet/" + petID + "/position",
-            port: 443,
-            method: 'POST',
-            headers: {
-                'Authorization': authToken,
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Content-Length': Buffer.byteLength(sureFlapPostData)
-            }
-        };
-
-        const postRequest = https.request(sureFlapPostOptions, function (res) {
+        const postRequest = https.request(postOptions, function (res) {
             res.setEncoding('utf8');
             let returnData = '';
 
@@ -572,7 +683,7 @@ function httpPost(petID, where) {
 
         });
 
-        postRequest.write(sureFlapPostData);
+        postRequest.write(postData);
         postRequest.end();
     });
 }
