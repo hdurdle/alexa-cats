@@ -600,6 +600,9 @@ function getLocation(pet) {
     logger.info("No pet to getLocation for");
     return;
   }
+
+  logger.info("getLocation for: " + pet.name);
+
   if (!pet.position.device_id) {
     pet.position.device_id = 0;
   }
@@ -622,10 +625,12 @@ function getLocation(pet) {
   };
 
   const catDetail = catdobs.find((x) => x.name === pet.name);
-  if (catDetail.dod) {
-    // don't add
-  } else {
-    locatedCatsData.push(catInfo);
+  if (catDetail != undefined) {
+    if (catDetail.hasOwnProperty("dod")) {
+      // don't add
+    } else {
+      locatedCatsData.push(catInfo);
+    }
   }
 } // getLocation(pet)
 
