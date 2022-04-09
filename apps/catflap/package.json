@@ -17,7 +17,7 @@
     "alexa-app-server": "^3.0.2",
     "ejs": "^2.3.1",
     "express": "^4.16.0",
-    "moment": "^2.23.0",
+    "moment": "^2.29.2",
     "request": "^2.88.0",
     "request-promise": "^4.2.2",
     "winston": "^3.1.0"
