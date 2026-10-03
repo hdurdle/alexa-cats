@@ -56,12 +56,13 @@ function envelope(request) {
   };
 }
 
-function intentRequest(name, slots = []) {
+function intentRequest(name, slots = [], confirmationStatus = "NONE") {
   const slotMap = {};
   slots.forEach((slot) => (slotMap[slot.name] = slot));
   return envelope({
     type: "IntentRequest",
-    intent: { name, confirmationStatus: "NONE", slots: slotMap },
+    dialogState: confirmationStatus === "NONE" ? undefined : "IN_PROGRESS",
+    intent: { name, confirmationStatus, slots: slotMap },
   });
 }
 
@@ -82,6 +83,7 @@ function stubClient(overrides = {}) {
     getDevices: async () => fixture("devices.json"),
     setPosition: async (...args) => calls.push(["setPosition", ...args]),
     setTagProfile: async (...args) => calls.push(["setTagProfile", ...args]),
+    setLocking: async (...args) => calls.push(["setLocking", ...args]),
     ...overrides,
   };
 }

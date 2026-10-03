@@ -6,6 +6,7 @@ const winston = require("winston");
 const model = require("./model");
 const {
   formatCatList,
+  describeGroups,
   getAgeSpeechForCat,
   getSpeechForCat,
 } = require("./speech");
@@ -13,8 +14,35 @@ const {
 const BATTERY_THRESHOLD = 5.2;
 const UNKNOWN_CAT = "Sorry, I don't recognise that cat.";
 const HELP =
-  "You can ask where a cat is, who is outside, who has been out the longest, " +
-  "or how the batteries are.";
+  "You can ask where the cats are, who is outside, who has been out the " +
+  "longest, who is locked in, or how the batteries are. You can also lock " +
+  "or unlock the cat flaps.";
+
+// LockMode slot values -> SureFlap locking codes
+const LOCK_MODE_VALUES = [
+  { value: "unlock", locking: 0, synonyms: ["unlocked", "open"] },
+  {
+    value: "keep in",
+    locking: 1,
+    synonyms: ["lock in", "keep pets in", "keep the cats in", "lock all cats in"],
+  },
+  {
+    value: "keep out",
+    locking: 2,
+    synonyms: ["lock out", "keep pets out", "keep the cats out", "lock all cats out"],
+  },
+  {
+    value: "lock",
+    locking: 3,
+    synonyms: ["lock both ways", "lock completely", "lock the cat flap both ways"],
+  },
+];
+
+// lock modes that can strand a cat, so Alexa asks first
+const CONFIRM_LOCKING = {
+  2: "That will stop the cats getting back in. Are you sure?",
+  3: "That will stop the cats going in or out. Are you sure?",
+};
 
 function createLogger(config) {
   const { combine, timestamp, prettyPrint } = winston.format;
@@ -101,6 +129,37 @@ function createApp({ config, client, logger = createLogger(config) }) {
     logger.info("session ended");
   });
 
+  alexaApp.customSlot(
+    "LockMode",
+    LOCK_MODE_VALUES.map(({ value, synonyms }) => ({ value, synonyms }))
+  );
+
+  alexaApp.intent(
+    "GetCatsLocationIntent",
+    {
+      utterances: [
+        "where are the cats",
+        "where are the kitties",
+        "where the cats are",
+        "where everyone is",
+      ],
+    },
+    function (req, res) {
+      logger.info("GetCatsLocationIntent");
+
+      const cats = [...req.ctx.cats].sort(byName);
+      const inside = cats.filter((x) => allInsideLocations.includes(x.location));
+      const outside = cats.filter((x) => !allInsideLocations.includes(x.location));
+      const speech = describeGroups([
+        [inside, "inside"],
+        [outside, "outside"],
+      ]);
+
+      logger.info(speech);
+      res.say(speech);
+    }
+  ); // GetCatsLocationIntent
+
   alexaApp.intent(
     "GetAgeOfCatIntent",
     {
@@ -181,30 +240,56 @@ function createApp({ config, client, logger = createLogger(config) }) {
     }
   ); //GetLocationOfCatIntent
 
-  alexaApp.intent(
-    "GetLongestDurationIntent",
-    {
-      slots: {
-        inout: "InOut",
-      },
-      utterances: [
-        "who has been {inout} the longest",
-        "who's been {inout} the longest",
-      ],
-    },
-    function (req, res) {
-      logger.info("GetLongestDurationIntent");
+  // who has been somewhere the longest (earliest since) or shortest
+  function durationHandler(name, pick) {
+    return function (req, res) {
+      logger.info(name);
 
       const location = getMatchedLocation(req);
-      const cat = catsIn(req, location).sort(bySince)[0];
+      const cat = pick(catsIn(req, location).sort(bySince));
       const speech = cat
         ? getSpeechForCat(cat, true)
         : "No kitties are " + describeLocation(location) + ".";
 
       logger.info(speech);
       res.say(speech);
-    }
+    };
+  }
+
+  alexaApp.intent(
+    "GetLongestDurationIntent",
+    {
+      slots: {
+        inout: "InOut",
+        locationname: "PetLocation",
+      },
+      utterances: [
+        "who has been {inout} the longest",
+        "who's been {inout} the longest",
+        "who has been in the {locationname} the longest",
+        "who's been in the {locationname} the longest",
+      ],
+    },
+    durationHandler("GetLongestDurationIntent", (cats) => cats[0])
   ); // GetLongestDurationIntent
+
+  alexaApp.intent(
+    "GetShortestDurationIntent",
+    {
+      slots: {
+        inout: "InOut",
+        locationname: "PetLocation",
+      },
+      utterances: [
+        "who has been {inout} the shortest",
+        "who's been {inout} the shortest",
+        "who has been {inout} for the shortest time",
+        "who has been in the {locationname} the shortest",
+        "who came {inout} last",
+      ],
+    },
+    durationHandler("GetShortestDurationIntent", (cats) => cats[cats.length - 1])
+  ); // GetShortestDurationIntent
 
   alexaApp.intent(
     "GetCatsInLocationIntent",
@@ -317,7 +402,7 @@ function createApp({ config, client, logger = createLogger(config) }) {
         speech = "No cat flaps are set up for curfew.";
       } else {
         const keepIn = getMatchedLocation(req).inside;
-        const profile = keepIn ? 3 : 2; // 3 = kept in, 2 = allowed out
+        const profile = keepIn ? model.PROFILE_KEPT_IN : model.PROFILE_ALLOWED_OUT;
 
         const results = await Promise.allSettled(
           curfewFlaps.map((flap) => {
@@ -349,6 +434,157 @@ function createApp({ config, client, logger = createLogger(config) }) {
       res.say(speech);
     }
   ); // SetCatPermissionIntent
+
+  alexaApp.intent(
+    "GetCatsPermissionIntent",
+    {
+      utterances: [
+        "who is locked in",
+        "who is kept in",
+        "which cats are locked in",
+        "which cats are allowed out",
+        "if the cats are allowed out",
+      ],
+    },
+    function (req, res) {
+      logger.info("GetCatsPermissionIntent");
+
+      const cats = [...req.ctx.cats].sort(byName);
+      const { keptIn, allowedOut } = model.getPermissions(
+        cats,
+        req.ctx.devices,
+        config
+      );
+      const speech = describeGroups([
+        [keptIn, "kept in"],
+        [allowedOut, "allowed out"],
+      ]);
+
+      logger.info(speech);
+      res.say(speech);
+    }
+  ); // GetCatsPermissionIntent
+
+  alexaApp.intent(
+    "GetLockStatusIntent",
+    {
+      utterances: [
+        "is the cat flap locked",
+        "are the cat flaps locked",
+        "if the cat flap is locked",
+        "about the lock status",
+        "the lock status",
+      ],
+    },
+    function (req, res) {
+      logger.info("GetLockStatusIntent");
+
+      const flapsWithLock = model
+        .realFlaps(req.ctx.devices, config)
+        .filter((x) => x.locking !== undefined);
+      const modes = [...new Set(flapsWithLock.map((x) => x.locking))];
+
+      let speech;
+      if (flapsWithLock.length === 0) {
+        speech = "I couldn't find any cat flaps.";
+      } else if (modes.length === 1) {
+        speech =
+          describeFlaps(flapsWithLock, "All the cat flaps are ") +
+          model.LOCK_MODES[modes[0]] +
+          ".";
+      } else {
+        speech = flapsWithLock
+          .map((x) => x.name + " is " + model.LOCK_MODES[x.locking] + ".")
+          .join(" ");
+      }
+
+      logger.info(speech);
+      res.say(speech);
+    }
+  ); // GetLockStatusIntent
+
+  alexaApp.intent(
+    "SetLockModeIntent",
+    {
+      slots: {
+        lockmode: "LockMode",
+      },
+      utterances: [
+        "to {lockmode}",
+        "to {lockmode} the cat flap",
+        "to {lockmode} the cat flaps",
+        "to set the cat flaps to {lockmode}",
+      ],
+    },
+    async function (req, res) {
+      logger.info("SetLockModeIntent");
+
+      const mode = getMatchedLockMode(req);
+      if (mode === null) {
+        res.say("Sorry, I didn't catch how to set the cat flaps.");
+        return;
+      }
+
+      if (CONFIRM_LOCKING[mode] && req.confirmationStatus !== "CONFIRMED") {
+        if (req.confirmationStatus === "DENIED") {
+          res.say("Okay, I won't change the cat flaps.");
+          return;
+        }
+        res
+          .say(CONFIRM_LOCKING[mode])
+          .directive({
+            type: "Dialog.ConfirmIntent",
+            updatedIntent: req.data.request.intent,
+          })
+          .shouldEndSession(false);
+        return;
+      }
+
+      const flapsToSet = model.realFlaps(req.ctx.devices, config);
+      const results = await Promise.allSettled(
+        flapsToSet.map((flap) => client.setLocking(flap.id, mode))
+      );
+      const failed = flapsToSet.filter((x, i) => results[i].status === "rejected");
+      results
+        .filter((x) => x.status === "rejected")
+        .forEach((x) => logger.error(x.reason));
+
+      let speech;
+      if (flapsToSet.length === 0) {
+        speech = "I couldn't find any cat flaps.";
+      } else if (failed.length === flapsToSet.length) {
+        speech = "Sorry, I couldn't update the cat flaps.";
+      } else {
+        speech =
+          "Okay, " +
+          describeFlaps(flapsToSet, "the cat flaps are ") +
+          model.LOCK_MODES[mode] +
+          ".";
+        if (failed.length > 0) {
+          speech += " But I couldn't update " + formatCatList(failed) + ".";
+        }
+      }
+
+      logger.info(speech);
+      res.say(speech);
+    }
+  ); // SetLockModeIntent
+
+  // "Back Door is " for one flap, otherwise the given phrase
+  function describeFlaps(devices, several) {
+    return devices.length > 1 ? several : devices[0].name + " is ";
+  }
+
+  // the SureFlap locking code for the lockmode slot, or null
+  function getMatchedLockMode(request) {
+    const spoken = resolvedValue(request.slots["lockmode"]);
+    if (!spoken) return null;
+    const value = spoken.toLowerCase();
+    const mode = LOCK_MODE_VALUES.find(
+      (x) => x.value === value || x.synonyms.includes(value)
+    );
+    return mode ? mode.locking : null;
+  }
 
   // the located cat named in the catname slot, or null
   function findCat(req) {

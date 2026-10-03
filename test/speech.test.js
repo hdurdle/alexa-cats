@@ -56,3 +56,22 @@ test("location speech outside purrs when asked", () => {
   );
   assert.match(text, /^<audio [^>]+\/>Felix has been outside for 30 minutes\.$/);
 });
+
+test("describeGroups gives one sentence per group", () => {
+  const cats = (...names) => names.map((name) => ({ name }));
+  assert.equal(
+    speech.describeGroups([
+      [cats("Felix", "Tom"), "inside"],
+      [cats("Garfield"), "outside"],
+    ]),
+    "Felix and Tom are inside. Garfield is outside."
+  );
+  assert.equal(
+    speech.describeGroups([
+      [[], "inside"],
+      [cats("Garfield"), "outside"],
+    ]),
+    "Garfield is outside."
+  );
+  assert.equal(speech.describeGroups([[[], "inside"]]), "No cats found.");
+});

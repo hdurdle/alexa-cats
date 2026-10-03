@@ -17,6 +17,21 @@ function formatCatList(cats) {
   return formatList(cats.map((x) => x.name));
 }
 
+// "Felix is inside." / "Felix and Tom are inside." / "" for nobody
+function describeGroup(cats, phrase) {
+  if (cats.length === 0) return "";
+  return formatCatList(cats) + (cats.length > 1 ? " are " : " is ") + phrase + ".";
+}
+
+// one sentence per non-empty group, e.g. "Felix is inside. Tom is outside."
+function describeGroups(groups) {
+  const speech = groups
+    .map(([cats, phrase]) => describeGroup(cats, phrase))
+    .filter(Boolean)
+    .join(" ");
+  return speech || "No cats found.";
+}
+
 function getAgeSpeechForCat(catDetail, now = moment()) {
   var dob = moment(catDetail["dob"]);
   now = moment(now);
@@ -93,6 +108,8 @@ function getSpeechForCat(cat, shouldPurr = false, now = moment()) {
 module.exports = {
   formatList,
   formatCatList,
+  describeGroup,
+  describeGroups,
   getAgeSpeechForCat,
   getSpeechForCat,
 };

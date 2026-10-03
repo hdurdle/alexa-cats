@@ -76,13 +76,21 @@ function createClient(config, { fetch = globalThis.fetch, timeoutMs = 5000 } = {
         )
       ).data,
     getDevices: async () =>
-      (await request("GET", "/device?with[]=status")).data,
+      (
+        await request(
+          "GET",
+          "/device?with[]=status&with[]=control&with[]=tags"
+        )
+      ).data,
     // where: 1 = inside, 2 = outside
     setPosition: (petId, where) =>
       request("POST", `/pet/${petId}/position`, {
         since: new Date().toISOString(),
         where,
       }),
+    // locking: 0 = unlocked, 1 = keep in, 2 = keep out, 3 = locked both ways
+    setLocking: (deviceId, locking) =>
+      request("PUT", `/device/${deviceId}/control`, { locking }),
     // profile: 2 = allowed out, 3 = kept in
     setTagProfile: (deviceId, tagId, profile) =>
       request("PUT", `/device/${deviceId}/tag/${tagId}`, { profile }),

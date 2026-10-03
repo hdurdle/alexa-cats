@@ -99,3 +99,17 @@ test("requests time out", async () => {
   );
   await assert.rejects(client.getDevices(), { name: "TimeoutError" });
 });
+
+test("devices are fetched with status, control and tags", async () => {
+  const { fetch, calls } = fakeFetch([[200, { data: [] }]]);
+  await createClient({ token: "t", household: 1 }, { fetch }).getDevices();
+  assert.match(calls[0].url, /\/device\?with\[\]=status&with\[\]=control&with\[\]=tags$/);
+});
+
+test("setLocking puts the lock mode", async () => {
+  const { fetch, calls } = fakeFetch([[200, { data: {} }]]);
+  await createClient({ token: "t", household: 1 }, { fetch }).setLocking(1001, 3);
+  assert.equal(calls[0].method, "PUT");
+  assert.match(calls[0].url, /\/device\/1001\/control$/);
+  assert.deepEqual(JSON.parse(calls[0].body), { locking: 3 });
+});

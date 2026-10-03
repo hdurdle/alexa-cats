@@ -51,6 +51,11 @@ test("device summary has battery, charge and configured icon", () => {
     icon: "fa-home",
     battery: "5.95",
     charge: "half",
+    locking: 0,
+    tags: [
+      { id: 9001, profile: 2 },
+      { id: 9002, profile: 3 },
+    ],
   });
   assert.equal(conservatory.icon, "fa-couch");
   assert.equal(conservatory.charge, "quarter");
@@ -61,4 +66,37 @@ test("charge buckets", () => {
   assert.equal(model.getCharge(5.0), "quarter");
   assert.equal(model.getCharge(5.8), "half");
   assert.equal(model.getCharge(6.0), "full");
+});
+
+test("a flap missing from config is treated like a manual position", () => {
+  const pet = { ...fixture("pets.json")[0] };
+  pet.position = { ...pet.position, device_id: 7777 };
+  assert.equal(model.locatePet(pet, config).location, "inside");
+});
+
+test("real flaps exclude the id 0 entry and unknown devices", () => {
+  const devices = model.summariseDevices(fixture("devices.json"), config);
+  assert.deepEqual(
+    model.realFlaps([...devices, { id: 0 }, { id: 4242 }], config).map((x) => x.id),
+    [1001, 1002]
+  );
+});
+
+test("permissions come from curfew flaps only", () => {
+  const cats = model.locatePets(fixture("pets.json"), config);
+  const devices = model.summariseDevices(fixture("devices.json"), config);
+  const { keptIn, allowedOut } = model.getPermissions(cats, devices, config);
+  assert.deepEqual(keptIn.map((x) => x.name), ["Felix"]);
+  assert.deepEqual(allowedOut.map((x) => x.name), ["Garfield"]);
+});
+
+test("permissions use every flap when none is marked for curfew", () => {
+  const noCurfew = fixture("config.json");
+  noCurfew.flaps.forEach((x) => delete x.curfew);
+  const cats = model.locatePets(fixture("pets.json"), noCurfew);
+  const devices = model.summariseDevices(fixture("devices.json"), noCurfew);
+  const { keptIn, allowedOut } = model.getPermissions(cats, devices, noCurfew);
+  // Felix is kept in by the back door and has no tag on the conservatory
+  assert.deepEqual(keptIn.map((x) => x.name), ["Felix"]);
+  assert.deepEqual(allowedOut.map((x) => x.name), ["Garfield"]);
 });
