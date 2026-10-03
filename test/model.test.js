@@ -23,7 +23,9 @@ test("pets are located from the last flap used", () => {
 });
 
 test("retired cats and cats without a dob entry are left out", () => {
-  const names = model.locatePets(fixture("pets.json"), config).map((x) => x.name);
+  const names = model
+    .locatePets(fixture("pets.json"), config)
+    .map((x) => x.name);
   assert.deepEqual(names, ["Garfield", "Felix"]);
 });
 
@@ -36,14 +38,14 @@ test("devices without a battery reading are skipped", () => {
   const devices = model.summariseDevices(fixture("devices.json"), config);
   assert.deepEqual(
     devices.map((x) => x.id),
-    [1001, 1002]
+    [1001, 1002],
   );
 });
 
 test("device summary has battery, charge and configured icon", () => {
   const [backDoor, conservatory] = model.summariseDevices(
     fixture("devices.json"),
-    config
+    config,
   );
   assert.deepEqual(backDoor, {
     id: 1001,
@@ -77,8 +79,10 @@ test("a flap missing from config is treated like a manual position", () => {
 test("real flaps exclude the id 0 entry and unknown devices", () => {
   const devices = model.summariseDevices(fixture("devices.json"), config);
   assert.deepEqual(
-    model.realFlaps([...devices, { id: 0 }, { id: 4242 }], config).map((x) => x.id),
-    [1001, 1002]
+    model
+      .realFlaps([...devices, { id: 0 }, { id: 4242 }], config)
+      .map((x) => x.id),
+    [1001, 1002],
   );
 });
 
@@ -86,8 +90,14 @@ test("permissions come from curfew flaps only", () => {
   const cats = model.locatePets(fixture("pets.json"), config);
   const devices = model.summariseDevices(fixture("devices.json"), config);
   const { keptIn, allowedOut } = model.getPermissions(cats, devices, config);
-  assert.deepEqual(keptIn.map((x) => x.name), ["Felix"]);
-  assert.deepEqual(allowedOut.map((x) => x.name), ["Garfield"]);
+  assert.deepEqual(
+    keptIn.map((x) => x.name),
+    ["Felix"],
+  );
+  assert.deepEqual(
+    allowedOut.map((x) => x.name),
+    ["Garfield"],
+  );
 });
 
 test("permissions use every flap when none is marked for curfew", () => {
@@ -97,6 +107,12 @@ test("permissions use every flap when none is marked for curfew", () => {
   const devices = model.summariseDevices(fixture("devices.json"), noCurfew);
   const { keptIn, allowedOut } = model.getPermissions(cats, devices, noCurfew);
   // Felix is kept in by the back door and has no tag on the conservatory
-  assert.deepEqual(keptIn.map((x) => x.name), ["Felix"]);
-  assert.deepEqual(allowedOut.map((x) => x.name), ["Garfield"]);
+  assert.deepEqual(
+    keptIn.map((x) => x.name),
+    ["Felix"],
+  );
+  assert.deepEqual(
+    allowedOut.map((x) => x.name),
+    ["Garfield"],
+  );
 });

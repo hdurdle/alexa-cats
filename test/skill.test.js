@@ -17,7 +17,7 @@ function setup(clientOverrides) {
 async function ask(name, slots, clientOverrides, confirmationStatus) {
   const { app, client } = setup(clientOverrides);
   const response = await app.request(
-    h.intentRequest(name, slots, confirmationStatus)
+    h.intentRequest(name, slots, confirmationStatus),
   );
   return { response, speech: h.speechOf(response), client };
 }
@@ -170,7 +170,7 @@ test("inside doesn't depend on flap order", async () => {
   const client = h.stubClient();
   const app = createApp({ config, client, logger: h.silentLogger });
   const response = await app.request(
-    h.intentRequest("SetLocationOfCatIntent", [cat("Felix"), inOut("in")])
+    h.intentRequest("SetLocationOfCatIntent", [cat("Felix"), inOut("in")]),
   );
   assert.equal(h.speechOf(response), "Okay, Felix is inside.");
   assert.deepEqual(client.calls, [["setPosition", 502, 1]]);
@@ -187,11 +187,11 @@ test("curfew writes are awaited and failures reported", async () => {
   });
   const app = createApp({ config, client, logger: h.silentLogger });
   const response = await app.request(
-    h.intentRequest("SetCatPermissionIntent", [cat("Garfield"), inOut("out")])
+    h.intentRequest("SetCatPermissionIntent", [cat("Garfield"), inOut("out")]),
   );
   assert.equal(
     h.speechOf(response),
-    "Okay, Garfield is allowed out. But I couldn't update conservatory."
+    "Okay, Garfield is allowed out. But I couldn't update conservatory.",
   );
   assert.deepEqual(client.calls, [["setTagProfile", 1001]]);
 });
@@ -201,7 +201,7 @@ test("each request sees its own data", async () => {
   // data arrives while the first is still in flight
   const oldPets = h.fixture("pets.json");
   const newPets = oldPets.map((x) =>
-    x.name === "Garfield" ? { ...x, position: { ...x.position, where: 2 } } : x
+    x.name === "Garfield" ? { ...x, position: { ...x.position, where: 2 } } : x,
   );
   const petResponses = [oldPets, newPets];
   const delays = [30, 0];
@@ -209,15 +209,15 @@ test("each request sees its own data", async () => {
     getPets: async () => petResponses.shift(),
     getDevices: () =>
       new Promise((resolve) =>
-        setTimeout(() => resolve(h.fixture("devices.json")), delays.shift())
+        setTimeout(() => resolve(h.fixture("devices.json")), delays.shift()),
       ),
   });
 
   const first = app.request(
-    h.intentRequest("GetCatsInLocationIntent", [inOut("out")])
+    h.intentRequest("GetCatsInLocationIntent", [inOut("out")]),
   );
   const second = app.request(
-    h.intentRequest("GetCatsInLocationIntent", [inOut("out")])
+    h.intentRequest("GetCatsInLocationIntent", [inOut("out")]),
   );
 
   assert.equal(h.speechOf(await first), "Felix is outside.");
@@ -250,13 +250,17 @@ test("help keeps the session open", async () => {
 });
 
 test("launch has a reprompt and doesn't call SureFlap", async () => {
-  const { app } = setup({ getPets: async () => assert.fail("should not fetch") });
+  const { app } = setup({
+    getPets: async () => assert.fail("should not fetch"),
+  });
   const response = await app.request(h.launchRequest());
   assert.ok(response.response.reprompt);
 });
 
 test("session end doesn't call SureFlap", async () => {
-  const { app } = setup({ getPets: async () => assert.fail("should not fetch") });
+  const { app } = setup({
+    getPets: async () => assert.fail("should not fetch"),
+  });
   await app.request(h.sessionEndedRequest());
 });
 
@@ -272,8 +276,15 @@ test("where are the cats", async () => {
 test("who has been out the shortest", async () => {
   const pets = h.fixture("pets.json").map((x) =>
     x.name === "Garfield"
-      ? { ...x, position: { ...x.position, where: 2, since: "2026-10-03T07:00:00+00:00" } }
-      : x
+      ? {
+          ...x,
+          position: {
+            ...x.position,
+            where: 2,
+            since: "2026-10-03T07:00:00+00:00",
+          },
+        }
+      : x,
   );
   const { speech } = await ask("GetShortestDurationIntent", [inOut("out")], {
     getPets: async () => pets,
@@ -295,7 +306,7 @@ test("lock status when flaps differ", async () => {
   const { speech } = await ask("GetLockStatusIntent");
   assert.equal(
     speech,
-    "Back Door is unlocked. Conservatory is set to keep pets in."
+    "Back Door is unlocked. Conservatory is set to keep pets in.",
   );
 });
 
@@ -310,7 +321,9 @@ test("lock status when flaps agree", async () => {
 });
 
 test("unlock sets every real flap without asking", async () => {
-  const { speech, client } = await ask("SetLockModeIntent", [lockMode("unlock")]);
+  const { speech, client } = await ask("SetLockModeIntent", [
+    lockMode("unlock"),
+  ]);
   assert.equal(speech, "Okay, the cat flaps are unlocked.");
   assert.deepEqual(client.calls, [
     ["setLocking", 1001, 0],
@@ -343,7 +356,7 @@ test("confirmed lock goes ahead", async () => {
     "SetLockModeIntent",
     [lockMode("lock")],
     {},
-    "CONFIRMED"
+    "CONFIRMED",
   );
   assert.equal(speech, "Okay, the cat flaps are locked both ways.");
   assert.equal(client.calls.length, 2);
@@ -354,7 +367,7 @@ test("denied lock does nothing", async () => {
     "SetLockModeIntent",
     [lockMode("lock")],
     {},
-    "DENIED"
+    "DENIED",
   );
   assert.equal(speech, "Okay, I won't change the cat flaps.");
   assert.deepEqual(client.calls, []);
@@ -376,6 +389,6 @@ test("a failed lock write is reported", async () => {
   });
   assert.equal(
     speech,
-    "Okay, the cat flaps are unlocked. But I couldn't update Back Door."
+    "Okay, the cat flaps are unlocked. But I couldn't update Back Door.",
   );
 });

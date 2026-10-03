@@ -24,17 +24,31 @@ const LOCK_MODE_VALUES = [
   {
     value: "keep in",
     locking: 1,
-    synonyms: ["lock in", "keep pets in", "keep the cats in", "lock all cats in"],
+    synonyms: [
+      "lock in",
+      "keep pets in",
+      "keep the cats in",
+      "lock all cats in",
+    ],
   },
   {
     value: "keep out",
     locking: 2,
-    synonyms: ["lock out", "keep pets out", "keep the cats out", "lock all cats out"],
+    synonyms: [
+      "lock out",
+      "keep pets out",
+      "keep the cats out",
+      "lock all cats out",
+    ],
   },
   {
     value: "lock",
     locking: 3,
-    synonyms: ["lock both ways", "lock completely", "lock the cat flap both ways"],
+    synonyms: [
+      "lock both ways",
+      "lock completely",
+      "lock the cat flap both ways",
+    ],
   },
 ];
 
@@ -143,8 +157,8 @@ function createApp({ config, client, logger = createLogger(config) }) {
   alexaApp.customSlot(
     "PetName",
     catdobs
-      .filter((x) => !x.dod)
-      .map((x) => ({ value: x.name, synonyms: x.synonyms || [] }))
+      .filter((x) => !Object.hasOwn(x, "dod"))
+      .map((x) => ({ value: x.name, synonyms: x.synonyms || [] })),
   );
   alexaApp.customSlot("PetLocation", [
     ...new Set([
@@ -154,7 +168,7 @@ function createApp({ config, client, logger = createLogger(config) }) {
   ]);
   alexaApp.customSlot(
     "LockMode",
-    LOCK_MODE_VALUES.map(({ value, synonyms }) => ({ value, synonyms }))
+    LOCK_MODE_VALUES.map(({ value, synonyms }) => ({ value, synonyms })),
   );
 
   alexaApp.intent(
@@ -171,8 +185,12 @@ function createApp({ config, client, logger = createLogger(config) }) {
       logger.info("GetCatsLocationIntent");
 
       const cats = [...req.ctx.cats].sort(byName);
-      const inside = cats.filter((x) => allInsideLocations.includes(x.location));
-      const outside = cats.filter((x) => !allInsideLocations.includes(x.location));
+      const inside = cats.filter((x) =>
+        allInsideLocations.includes(x.location),
+      );
+      const outside = cats.filter(
+        (x) => !allInsideLocations.includes(x.location),
+      );
       const speech = describeGroups([
         [inside, "inside"],
         [outside, "outside"],
@@ -180,7 +198,7 @@ function createApp({ config, client, logger = createLogger(config) }) {
 
       logger.info(speech);
       res.say(speech);
-    }
+    },
   ); // GetCatsLocationIntent
 
   alexaApp.intent(
@@ -200,7 +218,7 @@ function createApp({ config, client, logger = createLogger(config) }) {
 
       logger.info(speech);
       res.say(speech);
-    }
+    },
   ); // GetAgeOfCatIntent
 
   alexaApp.intent(
@@ -219,7 +237,7 @@ function createApp({ config, client, logger = createLogger(config) }) {
       logger.info("GetDeviceStatusIntent");
 
       const lowBatteryFlaps = req.ctx.devices.filter(
-        (x) => x.battery < BATTERY_THRESHOLD
+        (x) => x.battery < BATTERY_THRESHOLD,
       );
 
       let speech;
@@ -233,7 +251,7 @@ function createApp({ config, client, logger = createLogger(config) }) {
 
       logger.info(speech);
       res.say(speech);
-    }
+    },
   ); //GetDeviceStatusIntent
 
   alexaApp.intent(
@@ -260,7 +278,7 @@ function createApp({ config, client, logger = createLogger(config) }) {
 
       logger.info(speech);
       res.say(speech);
-    }
+    },
   ); //GetLocationOfCatIntent
 
   // who has been somewhere the longest (earliest since) or shortest
@@ -293,7 +311,7 @@ function createApp({ config, client, logger = createLogger(config) }) {
         "who's been in the {locationname} the longest",
       ],
     },
-    durationHandler("GetLongestDurationIntent", (cats) => cats[0])
+    durationHandler("GetLongestDurationIntent", (cats) => cats[0]),
   ); // GetLongestDurationIntent
 
   alexaApp.intent(
@@ -311,7 +329,10 @@ function createApp({ config, client, logger = createLogger(config) }) {
         "who came {inout} last",
       ],
     },
-    durationHandler("GetShortestDurationIntent", (cats) => cats[cats.length - 1])
+    durationHandler(
+      "GetShortestDurationIntent",
+      (cats) => cats[cats.length - 1],
+    ),
   ); // GetShortestDurationIntent
 
   alexaApp.intent(
@@ -347,7 +368,7 @@ function createApp({ config, client, logger = createLogger(config) }) {
 
       logger.info(speech);
       res.say(speech);
-    }
+    },
   ); // GetCatsInLocationIntent
 
   alexaApp.intent(
@@ -371,7 +392,7 @@ function createApp({ config, client, logger = createLogger(config) }) {
 
       logger.info(speech);
       res.say(speech);
-    }
+    },
   ); // GetCatInLocationDurationIntent
 
   alexaApp.intent(
@@ -400,7 +421,7 @@ function createApp({ config, client, logger = createLogger(config) }) {
 
       logger.info(speech);
       res.say(speech);
-    }
+    },
   ); // SetLocationOfCatIntent
 
   alexaApp.intent(
@@ -425,16 +446,18 @@ function createApp({ config, client, logger = createLogger(config) }) {
         speech = "No cat flaps are set up for curfew.";
       } else {
         const keepIn = getMatchedLocation(req).inside;
-        const profile = keepIn ? model.PROFILE_KEPT_IN : model.PROFILE_ALLOWED_OUT;
+        const profile = keepIn
+          ? model.PROFILE_KEPT_IN
+          : model.PROFILE_ALLOWED_OUT;
 
         const results = await Promise.allSettled(
           curfewFlaps.map((flap) => {
             logger.info("Setting permission on " + flap.name);
             return client.setTagProfile(flap.id, cat.tag_id, profile);
-          })
+          }),
         );
         const failed = curfewFlaps.filter(
-          (flap, i) => results[i].status === "rejected"
+          (flap, i) => results[i].status === "rejected",
         );
         results
           .filter((x) => x.status === "rejected")
@@ -455,7 +478,7 @@ function createApp({ config, client, logger = createLogger(config) }) {
 
       logger.info(speech);
       res.say(speech);
-    }
+    },
   ); // SetCatPermissionIntent
 
   alexaApp.intent(
@@ -476,7 +499,7 @@ function createApp({ config, client, logger = createLogger(config) }) {
       const { keptIn, allowedOut } = model.getPermissions(
         cats,
         req.ctx.devices,
-        config
+        config,
       );
       const speech = describeGroups([
         [keptIn, "kept in"],
@@ -485,7 +508,7 @@ function createApp({ config, client, logger = createLogger(config) }) {
 
       logger.info(speech);
       res.say(speech);
-    }
+    },
   ); // GetCatsPermissionIntent
 
   alexaApp.intent(
@@ -523,7 +546,7 @@ function createApp({ config, client, logger = createLogger(config) }) {
 
       logger.info(speech);
       res.say(speech);
-    }
+    },
   ); // GetLockStatusIntent
 
   alexaApp.intent(
@@ -565,9 +588,11 @@ function createApp({ config, client, logger = createLogger(config) }) {
 
       const flapsToSet = model.realFlaps(req.ctx.devices, config);
       const results = await Promise.allSettled(
-        flapsToSet.map((flap) => client.setLocking(flap.id, mode))
+        flapsToSet.map((flap) => client.setLocking(flap.id, mode)),
       );
-      const failed = flapsToSet.filter((x, i) => results[i].status === "rejected");
+      const failed = flapsToSet.filter(
+        (x, i) => results[i].status === "rejected",
+      );
       results
         .filter((x) => x.status === "rejected")
         .forEach((x) => logger.error(x.reason));
@@ -590,7 +615,7 @@ function createApp({ config, client, logger = createLogger(config) }) {
 
       logger.info(speech);
       res.say(speech);
-    }
+    },
   ); // SetLockModeIntent
 
   // "Back Door is " for one flap, otherwise the given phrase
@@ -604,7 +629,7 @@ function createApp({ config, client, logger = createLogger(config) }) {
     if (!spoken) return null;
     const value = spoken.toLowerCase();
     const mode = LOCK_MODE_VALUES.find(
-      (x) => x.value === value || x.synonyms.includes(value)
+      (x) => x.value === value || x.synonyms.includes(value),
     );
     return mode ? mode.locking : null;
   }
@@ -623,8 +648,10 @@ function createApp({ config, client, logger = createLogger(config) }) {
 
   // "outside", "inside", "in the house"
   function describeLocation(location) {
-    return (insideLocations.includes(location.label) ? "in the " : "") +
-      location.label;
+    return (
+      (insideLocations.includes(location.label) ? "in the " : "") +
+      location.label
+    );
   }
 
   // the cat name from the catname slot, or null

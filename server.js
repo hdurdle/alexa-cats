@@ -14,7 +14,10 @@ const ENDPOINT = "/alexa/catflap";
 
 function applicationIdOf(body) {
   const fromContext =
-    body && body.context && body.context.System && body.context.System.application;
+    body &&
+    body.context &&
+    body.context.System &&
+    body.context.System.application;
   const fromSession = body && body.session && body.session.application;
   return (fromContext || fromSession || {}).applicationId;
 }
@@ -44,9 +47,16 @@ function createServer({ config, alexaApp, logger, verify, debug = false }) {
   }
 
   app.post(ENDPOINT, (req, res, next) => {
-    if (config.applicationId && applicationIdOf(req.body) !== config.applicationId) {
-      logger.warn("Rejected request for applicationId " + applicationIdOf(req.body));
-      return res.status(403).json({ status: "failure", reason: "unknown skill" });
+    if (
+      config.applicationId &&
+      applicationIdOf(req.body) !== config.applicationId
+    ) {
+      logger.warn(
+        "Rejected request for applicationId " + applicationIdOf(req.body),
+      );
+      return res
+        .status(403)
+        .json({ status: "failure", reason: "unknown skill" });
     }
     next();
   });
@@ -79,10 +89,7 @@ function main() {
     logger,
     verify: verify && createVerifier(),
     debug,
-  }).listen(
-    port,
-    () => logger.info(`listening on port ${port}`)
-  );
+  }).listen(port, () => logger.info(`listening on port ${port}`));
 
   for (const signal of ["SIGTERM", "SIGINT"]) {
     process.on(signal, () => {

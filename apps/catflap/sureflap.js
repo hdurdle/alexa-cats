@@ -7,7 +7,10 @@ const crypto = require("crypto");
 
 const API_URL = "https://app.api.surehub.io/api";
 
-function createClient(config, { fetch = globalThis.fetch, timeoutMs = 5000 } = {}) {
+function createClient(
+  config,
+  { fetch = globalThis.fetch, timeoutMs = 5000 } = {},
+) {
   const canLogin = Boolean(config.email && config.password);
   const deviceId = String(crypto.randomInt(1e9, 1e10));
   let token = config.token || null;
@@ -44,7 +47,7 @@ function createClient(config, { fetch = globalThis.fetch, timeoutMs = 5000 } = {
           password: config.password,
           device_id: deviceId,
         },
-        false
+        false,
       )
         .then((result) => {
           token = result.data.token;
@@ -72,16 +75,12 @@ function createClient(config, { fetch = globalThis.fetch, timeoutMs = 5000 } = {
       (
         await request(
           "GET",
-          `/household/${config.household}/pet?with[]=position&with[]=tag`
+          `/household/${config.household}/pet?with[]=position&with[]=tag`,
         )
       ).data,
     getDevices: async () =>
-      (
-        await request(
-          "GET",
-          "/device?with[]=status&with[]=control&with[]=tags"
-        )
-      ).data,
+      (await request("GET", "/device?with[]=status&with[]=control&with[]=tags"))
+        .data,
     // where: 1 = inside, 2 = outside
     setPosition: (petId, where) =>
       request("POST", `/pet/${petId}/position`, {

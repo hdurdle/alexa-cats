@@ -26,8 +26,7 @@ function locatePet(pet, config) {
   // the position has no device_id when it was set manually in the app, and a
   // flap missing from config is treated the same way
   const deviceId = pet.position.device_id || 0;
-  const lastFlapUsed =
-    config.flaps.find((x) => x.id === deviceId) ||
+  const lastFlapUsed = config.flaps.find((x) => x.id === deviceId) ||
     config.flaps.find((x) => x.id === 0) || { in: "inside", out: "outside" };
 
   const location =
@@ -49,7 +48,7 @@ function locatePets(pets, config) {
     .filter((cat) => {
       if (!cat) return false;
       const catDetail = config.catdobs.find((x) => x.name === cat.name);
-      return catDetail !== undefined && !catDetail.hasOwnProperty("dod");
+      return catDetail !== undefined && !Object.hasOwn(catDetail, "dod");
     });
 }
 
@@ -81,7 +80,7 @@ function summariseDevices(devices, config) {
 // the configured flaps (not the id 0 placeholder) that SureFlap reports
 function realFlaps(devices, config) {
   return devices.filter((device) =>
-    config.flaps.some((flap) => flap.id === device.id && flap.id > 0)
+    config.flaps.some((flap) => flap.id === device.id && flap.id > 0),
   );
 }
 
@@ -91,7 +90,7 @@ function realFlaps(devices, config) {
 function getPermissions(cats, devices, config) {
   const curfewIds = config.flaps.filter((x) => x.curfew).map((x) => x.id);
   const flaps = realFlaps(devices, config).filter(
-    (x) => curfewIds.length === 0 || curfewIds.includes(x.id)
+    (x) => curfewIds.length === 0 || curfewIds.includes(x.id),
   );
 
   const keptIn = [];

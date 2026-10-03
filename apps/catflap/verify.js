@@ -29,7 +29,8 @@ function checkCertUrl(certUrl) {
     fail("invalid certificate URL");
   }
   if (url.protocol !== "https:") fail("certificate URL must be https");
-  if (url.hostname !== CERT_HOST) fail("certificate URL host must be " + CERT_HOST);
+  if (url.hostname !== CERT_HOST)
+    fail("certificate URL host must be " + CERT_HOST);
   if (url.port && url.port !== "443") fail("certificate URL port must be 443");
   if (!url.pathname.startsWith(CERT_PATH_PREFIX)) {
     fail("certificate URL path must start with " + CERT_PATH_PREFIX);
@@ -39,7 +40,7 @@ function checkCertUrl(certUrl) {
 
 function parseChain(pem) {
   const blocks = pem.match(
-    /-----BEGIN CERTIFICATE-----[\s\S]+?-----END CERTIFICATE-----/g
+    /-----BEGIN CERTIFICATE-----[\s\S]+?-----END CERTIFICATE-----/g,
   );
   if (!blocks) fail("no certificates in chain");
   return blocks.map((block) => new crypto.X509Certificate(block));
@@ -63,7 +64,8 @@ function checkChain(chain, roots, now) {
 
   const anchoredBy = (cert) =>
     roots.some(
-      (root) => root.fingerprint256 === cert.fingerprint256 || issuedBy(cert, root)
+      (root) =>
+        root.fingerprint256 === cert.fingerprint256 || issuedBy(cert, root),
     );
 
   for (let i = 0; i < chain.length; i++) {
@@ -138,7 +140,7 @@ function createVerifier({
       "RSA-SHA256",
       rawBody,
       chain[0].publicKey,
-      Buffer.from(signature, "base64")
+      Buffer.from(signature, "base64"),
     );
     if (!valid) fail("invalid signature");
 

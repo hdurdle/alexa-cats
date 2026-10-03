@@ -27,7 +27,6 @@ async function start(t, options = {}) {
     logger: h.silentLogger,
   });
   const server = createServer({
-    config,
     alexaApp,
     logger: h.silentLogger,
     verify: false,
@@ -101,5 +100,8 @@ test("schema is served when debugging", async (t) => {
   const base = await start(t, { debug: true });
   const res = await fetch(base + "/alexa/catflap?schema");
   const schema = await res.json();
-  assert.equal(schema.interactionModel.languageModel.invocationName, "cat flap");
+  assert.equal(
+    schema.interactionModel.languageModel.invocationName,
+    "cat flap",
+  );
 });

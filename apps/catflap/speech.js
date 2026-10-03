@@ -20,7 +20,9 @@ function formatCatList(cats) {
 // "Felix is inside." / "Felix and Tom are inside." / "" for nobody
 function describeGroup(cats, phrase) {
   if (cats.length === 0) return "";
-  return formatCatList(cats) + (cats.length > 1 ? " are " : " is ") + phrase + ".";
+  return (
+    formatCatList(cats) + (cats.length > 1 ? " are " : " is ") + phrase + "."
+  );
 }
 
 // one sentence per non-empty group, e.g. "Felix is inside. Tom is outside."

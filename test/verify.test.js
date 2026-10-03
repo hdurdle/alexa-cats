@@ -19,7 +19,9 @@ function signed(body, { certUrl = CERT_URL } = {}) {
     raw,
     headers: {
       signaturecertchainurl: certUrl,
-      "signature-256": crypto.sign("RSA-SHA256", raw, leafKey).toString("base64"),
+      "signature-256": crypto
+        .sign("RSA-SHA256", raw, leafKey)
+        .toString("base64"),
     },
   };
 }
@@ -63,7 +65,7 @@ test("caches the certificate chain", async () => {
 test("rejects a tampered body", async () => {
   const { raw, headers } = signed(h.launchRequest());
   const tampered = Buffer.from(
-    raw.toString().replace("LaunchRequest", "IntentRequest")
+    raw.toString().replace("LaunchRequest", "IntentRequest"),
   );
   await rejects(verifier().verify(headers, tampered), /invalid signature/);
 });
@@ -72,11 +74,11 @@ test("rejects missing headers", async () => {
   const { raw, headers } = signed(h.launchRequest());
   await rejects(
     verifier().verify({ ...headers, "signature-256": undefined }, raw),
-    /Signature-256/
+    /Signature-256/,
   );
   await rejects(
     verifier().verify({ ...headers, signaturecertchainurl: undefined }, raw),
-    /SignatureCertChainUrl/
+    /SignatureCertChainUrl/,
   );
 });
 
@@ -115,12 +117,18 @@ test("accepts a trust anchor part-way up the chain", async () => {
 
 test("rejects a certificate for the wrong host", async () => {
   const { raw, headers } = signed(h.launchRequest());
-  await rejects(verifier("wronghost-chain.pem").verify(headers, raw), /echo-api/);
+  await rejects(
+    verifier("wronghost-chain.pem").verify(headers, raw),
+    /echo-api/,
+  );
 });
 
 test("rejects a chain from an untrusted CA", async () => {
   const { raw, headers } = signed(h.launchRequest());
-  await rejects(verifier("rogue-chain.pem").verify(headers, raw), /trusted root/);
+  await rejects(
+    verifier("rogue-chain.pem").verify(headers, raw),
+    /trusted root/,
+  );
 });
 
 test("rejects an expired certificate", async () => {
@@ -130,6 +138,6 @@ test("rejects an expired certificate", async () => {
   const { raw, headers } = signed(body);
   await rejects(
     verifier("chain.pem", { clock: () => future }).verify(headers, raw),
-    /out of date/
+    /out of date/,
   );
 });

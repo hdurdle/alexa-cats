@@ -6,7 +6,7 @@ const APPLICATION_ID = "amzn1.ask.skill.test";
 
 function fixture(name) {
   return JSON.parse(
-    fs.readFileSync(path.join(__dirname, "fixtures", name), "utf8")
+    fs.readFileSync(path.join(__dirname, "fixtures", name), "utf8"),
   );
 }
 

@@ -19,7 +19,7 @@ function buildModel(config) {
     type.values.forEach((value) => {
       value.id = slotId(value.name.value);
       if (value.name.synonyms.length === 0) delete value.name.synonyms;
-    })
+    }),
   );
 
   // Dialog.ConfirmIntent (used before locking cats out) needs the intent to

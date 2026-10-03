@@ -17,7 +17,8 @@ function applyEnv(config, env) {
   for (const [name, key] of Object.entries(ENV_OVERRIDES)) {
     if (env[name]) config[key] = env[name];
   }
-  if (config.household !== undefined) config.household = Number(config.household);
+  if (config.household !== undefined)
+    config.household = Number(config.household);
   return config;
 }
 
@@ -41,7 +42,9 @@ function validateConfig(config) {
     const ids = config.flaps.map((x) => x.id);
     const duplicates = ids.filter((id, i) => ids.indexOf(id) !== i);
     if (duplicates.length > 0) {
-      problems.push("duplicate flap ids: " + [...new Set(duplicates)].join(", "));
+      problems.push(
+        "duplicate flap ids: " + [...new Set(duplicates)].join(", "),
+      );
     }
     config.flaps.forEach((flap) => {
       if (!flap.in || !flap.out) {
@@ -64,7 +67,10 @@ function validateConfig(config) {
   return config;
 }
 
-function loadConfig(file = process.env.CONFIG_PATH || DEFAULT_PATH, env = process.env) {
+function loadConfig(
+  file = process.env.CONFIG_PATH || DEFAULT_PATH,
+  env = process.env,
+) {
   const config = JSON.parse(fs.readFileSync(file, "utf8"));
   return validateConfig(applyEnv(config, env));
 }

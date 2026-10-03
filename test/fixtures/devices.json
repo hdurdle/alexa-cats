@@ -6,7 +6,10 @@
     "name": "Back Door",
     "status": { "battery": 5.95, "online": true },
     "control": { "locking": 0 },
-    "tags": [{ "id": 9001, "profile": 2 }, { "id": 9002, "profile": 3 }]
+    "tags": [
+      { "id": 9001, "profile": 2 },
+      { "id": 9002, "profile": 3 }
+    ]
   },
   {
     "id": 1002,

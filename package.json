@@ -11,7 +11,10 @@
     "start": "node server.js",
     "test": "node --test test/*.test.js",
     "model": "node scripts/build-model.js",
-    "model:example": "node scripts/build-model.js --example"
+    "model:example": "node scripts/build-model.js --example",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "repository": {
     "type": "git",
@@ -31,5 +34,11 @@
   },
   "overrides": {
     "alexa-verifier-middleware": "file:./stubs/alexa-verifier-middleware"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.12.0",
+    "globals": "^17.13.0",
+    "prettier": "^3.9.9"
   }
 }

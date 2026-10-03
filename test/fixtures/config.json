@@ -4,8 +4,20 @@
   "logLevel": "error",
   "flaps": [
     { "id": 0, "in": "inside", "out": "outside", "name": "" },
-    { "id": 1001, "in": "house", "out": "outside", "name": "back door", "curfew": true },
-    { "id": 1002, "in": "conservatory", "out": "outside", "name": "conservatory", "icon": "fa-couch" }
+    {
+      "id": 1001,
+      "in": "house",
+      "out": "outside",
+      "name": "back door",
+      "curfew": true
+    },
+    {
+      "id": 1002,
+      "in": "conservatory",
+      "out": "outside",
+      "name": "conservatory",
+      "icon": "fa-couch"
+    }
   ],
   "catdobs": [
     { "name": "Garfield", "dob": "2018-06-19", "synonyms": ["Garfy"] },

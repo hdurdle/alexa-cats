@@ -7,16 +7,20 @@ const { buildModel } = require("../apps/catflap/interaction-model");
 const { fixture } = require("./helpers");
 
 const dir = path.join(__dirname, "..", "apps", "catflap");
-const read = (name) => JSON.parse(fs.readFileSync(path.join(dir, name), "utf8"));
+const read = (name) =>
+  JSON.parse(fs.readFileSync(path.join(dir, name), "utf8"));
 
 test("the committed example model is up to date (run npm run model:example)", () => {
-  assert.deepEqual(read("interaction_model.json"), buildModel(read("config-dist.json")));
+  assert.deepEqual(
+    read("interaction_model.json"),
+    buildModel(read("config-dist.json")),
+  );
 });
 
 test("slot values come from config", () => {
   const model = buildModel(fixture("config.json")).interactionModel;
   const types = Object.fromEntries(
-    model.languageModel.types.map((x) => [x.name, x.values])
+    model.languageModel.types.map((x) => [x.name, x.values]),
   );
 
   assert.deepEqual(types.PetName, [
@@ -25,11 +29,11 @@ test("slot values come from config", () => {
   ]);
   assert.deepEqual(
     types.PetLocation.map((x) => x.name.value),
-    ["house", "conservatory", "outside"]
+    ["house", "conservatory", "outside"],
   );
   assert.deepEqual(
     types.LockMode.map((x) => x.id),
-    ["UNLOCK", "KEEP_IN", "KEEP_OUT", "LOCK"]
+    ["UNLOCK", "KEEP_IN", "KEEP_OUT", "LOCK"],
   );
 });
 

@@ -14,7 +14,7 @@ const example = process.argv.includes("--example");
 const configFile = path.join(dir, example ? "config-dist.json" : "config.json");
 const outFile = path.join(
   dir,
-  example ? "interaction_model.json" : "interaction_model.local.json"
+  example ? "interaction_model.json" : "interaction_model.local.json",
 );
 
 const config = JSON.parse(fs.readFileSync(configFile, "utf8"));

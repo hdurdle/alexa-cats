@@ -20,7 +20,7 @@ test("environment variables override the file", () => {
 
 test("config-dist.json is a valid starting point", () => {
   const config = validateConfig(
-    structuredClone(require("../apps/catflap/config-dist.json"))
+    structuredClone(require("../apps/catflap/config-dist.json")),
   );
   assert.equal(config.applicationId, undefined);
 });
@@ -47,7 +47,7 @@ test("all problems are reported together", () => {
       assert.match(error.message, /"id": 0/);
       assert.match(error.message, /catdobs/);
       return true;
-    }
+    },
   );
 });
 

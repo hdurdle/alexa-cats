@@ -36,7 +36,7 @@ test("logs in once, then uses the token", async () => {
   assert.equal(calls[0].headers.Authorization, undefined);
   assert.match(
     calls[1].url,
-    /\/household\/1234\/pet\?with\[\]=position&with\[\]=tag$/
+    /\/household\/1234\/pet\?with\[\]=position&with\[\]=tag$/,
   );
   assert.equal(calls[1].headers.Authorization, "Bearer t1");
   assert.equal(calls[2].headers.Authorization, "Bearer t1");
@@ -75,7 +75,7 @@ test("a 401 with only a static token is an error", async () => {
   const { fetch } = fakeFetch([[401]]);
   await assert.rejects(
     createClient({ token: "static", household: 1 }, { fetch }).getDevices(),
-    /401/
+    /401/,
   );
 });
 
@@ -91,11 +91,11 @@ test("writes send JSON and accept an empty response", async () => {
 test("requests time out", async () => {
   const fetch = (url, { signal }) =>
     new Promise((resolve, reject) =>
-      signal.addEventListener("abort", () => reject(signal.reason))
+      signal.addEventListener("abort", () => reject(signal.reason)),
     );
   const client = createClient(
     { token: "t", household: 1 },
-    { fetch, timeoutMs: 20 }
+    { fetch, timeoutMs: 20 },
   );
   await assert.rejects(client.getDevices(), { name: "TimeoutError" });
 });
@@ -103,12 +103,18 @@ test("requests time out", async () => {
 test("devices are fetched with status, control and tags", async () => {
   const { fetch, calls } = fakeFetch([[200, { data: [] }]]);
   await createClient({ token: "t", household: 1 }, { fetch }).getDevices();
-  assert.match(calls[0].url, /\/device\?with\[\]=status&with\[\]=control&with\[\]=tags$/);
+  assert.match(
+    calls[0].url,
+    /\/device\?with\[\]=status&with\[\]=control&with\[\]=tags$/,
+  );
 });
 
 test("setLocking puts the lock mode", async () => {
   const { fetch, calls } = fakeFetch([[200, { data: {} }]]);
-  await createClient({ token: "t", household: 1 }, { fetch }).setLocking(1001, 3);
+  await createClient({ token: "t", household: 1 }, { fetch }).setLocking(
+    1001,
+    3,
+  );
   assert.equal(calls[0].method, "PUT");
   assert.match(calls[0].url, /\/device\/1001\/control$/);
   assert.deepEqual(JSON.parse(calls[0].body), { locking: 3 });
