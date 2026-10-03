@@ -15,6 +15,13 @@ function buildModel(config) {
   const model = JSON.parse(app.schemas.askcli(INVOCATION_NAME));
   const languageModel = model.interactionModel.languageModel;
 
+  // alexa-app runs samples through alexa-utterances, which turns
+  // "where is {catname}" into "where is catname". Use the code's utterances
+  // as written instead; they don't use any expansion syntax.
+  languageModel.intents.forEach((intent) => {
+    intent.samples = [...(app.intents[intent.name].utterances || [])];
+  });
+
   languageModel.types.forEach((type) =>
     type.values.forEach((value) => {
       value.id = slotId(value.name.value);

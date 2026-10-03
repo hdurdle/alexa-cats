@@ -54,6 +54,38 @@ test("every intent the skill handles is in the model", () => {
   assert.ok(dialogNames.includes("GetLocationOfCatIntent"));
 });
 
+test("samples keep their {slot} references", () => {
+  const model = buildModel(fixture("config.json")).interactionModel;
+  const location = model.languageModel.intents.find(
+    (x) => x.name === "GetLocationOfCatIntent",
+  );
+  assert.ok(location.samples.includes("where is {catname}"));
+
+  model.languageModel.intents.forEach((intent) => {
+    const slotNames = (intent.slots || []).map((x) => x.name);
+    const referenced = new Set(
+      intent.samples.flatMap((x) =>
+        [...x.matchAll(/\{(\w+)\}/g)].map((m) => m[1]),
+      ),
+    );
+    slotNames.forEach((name) =>
+      assert.ok(referenced.has(name), `${intent.name} never uses {${name}}`),
+    );
+    referenced.forEach((name) =>
+      assert.ok(slotNames.includes(name), `${intent.name} has no slot ${name}`),
+    );
+    intent.samples.forEach((sample) =>
+      slotNames.forEach((name) =>
+        assert.doesNotMatch(
+          sample,
+          new RegExp(`(^|[^{])\\b${name}\\b(?!\\})`),
+          `${intent.name}: bare slot name in "${sample}"`,
+        ),
+      ),
+    );
+  });
+});
+
 test("cat name slots can be elicited", () => {
   const model = buildModel(fixture("config.json")).interactionModel;
   const intent = model.languageModel.intents.find(

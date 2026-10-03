@@ -34,8 +34,8 @@
         {
           "name": "GetAgeOfCatIntent",
           "samples": [
-            "how old is catname",
-            "how old catname is"
+            "how old is {catname}",
+            "how old {catname} is"
           ],
           "slots": [
             {
@@ -61,13 +61,13 @@
         {
           "name": "GetLocationOfCatIntent",
           "samples": [
-            "where's catname",
-            "is catname outside",
-            "is catname at home",
-            "is catname out",
-            "is catname in",
-            "where is catname",
-            "where catname is"
+            "where's {catname}",
+            "is {catname} outside",
+            "is {catname} at home",
+            "is {catname} out",
+            "is {catname} in",
+            "where is {catname}",
+            "where {catname} is"
           ],
           "slots": [
             {
@@ -82,10 +82,10 @@
         {
           "name": "GetLongestDurationIntent",
           "samples": [
-            "who has been inout the longest",
-            "who's been inout the longest",
-            "who has been in the locationname the longest",
-            "who's been in the locationname the longest"
+            "who has been {inout} the longest",
+            "who's been {inout} the longest",
+            "who has been in the {locationname} the longest",
+            "who's been in the {locationname} the longest"
           ],
           "slots": [
             {
@@ -103,11 +103,11 @@
         {
           "name": "GetShortestDurationIntent",
           "samples": [
-            "who has been inout the shortest",
-            "who's been inout the shortest",
-            "who has been inout for the shortest time",
-            "who has been in the locationname the shortest",
-            "who came inout last"
+            "who has been {inout} the shortest",
+            "who's been {inout} the shortest",
+            "who has been {inout} for the shortest time",
+            "who has been in the {locationname} the shortest",
+            "who came {inout} last"
           ],
           "slots": [
             {
@@ -125,11 +125,11 @@
         {
           "name": "GetCatsInLocationIntent",
           "samples": [
-            "who is inout",
-            "who is in the locationname",
-            "who's in the locationname",
-            "who is at inout",
-            "who is locationname"
+            "who is {inout}",
+            "who is in the {locationname}",
+            "who's in the {locationname}",
+            "who is at {inout}",
+            "who is {locationname}"
           ],
           "slots": [
             {
@@ -147,9 +147,9 @@
         {
           "name": "GetCatInLocationDurationIntent",
           "samples": [
-            "when did catname come inout",
-            "when did catname go inout",
-            "how long has catname been inout"
+            "when did {catname} come {inout}",
+            "when did {catname} go {inout}",
+            "how long has {catname} been {inout}"
           ],
           "slots": [
             {
@@ -169,7 +169,7 @@
         {
           "name": "SetLocationOfCatIntent",
           "samples": [
-            "catname is inout"
+            "{catname} is {inout}"
           ],
           "slots": [
             {
@@ -189,8 +189,8 @@
         {
           "name": "SetCatPermissionIntent",
           "samples": [
-            "to keep catname inout",
-            "to let catname inout"
+            "to keep {catname} {inout}",
+            "to let {catname} {inout}"
           ],
           "slots": [
             {
@@ -230,10 +230,10 @@
         {
           "name": "SetLockModeIntent",
           "samples": [
-            "to lockmode",
-            "to lockmode the cat flap",
-            "to lockmode the cat flaps",
-            "to set the cat flaps to lockmode"
+            "to {lockmode}",
+            "to {lockmode} the cat flap",
+            "to {lockmode} the cat flaps",
+            "to set the cat flaps to {lockmode}"
           ],
           "slots": [
             {
