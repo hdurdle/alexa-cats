@@ -37,7 +37,14 @@
           "name": "GetAgeOfCatIntent",
           "samples": [
             "how old is {catname}",
-            "how old {catname} is"
+            "how old {catname} is",
+            "how old is {catname} now",
+            "tell me how old {catname} is",
+            "what age is {catname}",
+            "what age {catname} is",
+            "what is the age of {catname}",
+            "how many years old is {catname}",
+            "when was {catname} born"
           ],
           "slots": [
             {
@@ -162,7 +169,12 @@
           "samples": [
             "when did {catname} come {inout}",
             "when did {catname} go {inout}",
-            "how long has {catname} been {inout}"
+            "how long has {catname} been {inout}",
+            "how long has {catname} been {inout} for",
+            "how long {catname} has been {inout}",
+            "how long ago did {catname} go {inout}",
+            "how long ago did {catname} come {inout}",
+            "since when has {catname} been {inout}"
           ],
           "slots": [
             {
@@ -182,7 +194,14 @@
         {
           "name": "SetLocationOfCatIntent",
           "samples": [
-            "{catname} is {inout}"
+            "{catname} is {inout}",
+            "{catname} is {inout} now",
+            "{catname} has gone {inout}",
+            "{catname} has come {inout}",
+            "{catname} went {inout}",
+            "{catname} came {inout}",
+            "mark {catname} as {inout}",
+            "set {catname} to {inout}"
           ],
           "slots": [
             {
@@ -203,7 +222,13 @@
           "name": "SetCatPermissionIntent",
           "samples": [
             "to keep {catname} {inout}",
-            "to let {catname} {inout}"
+            "to let {catname} {inout}",
+            "to allow {catname} {inout}",
+            "to lock {catname} {inout}",
+            "keep {catname} {inout}",
+            "let {catname} {inout}",
+            "allow {catname} {inout}",
+            "lock {catname} {inout}"
           ],
           "slots": [
             {

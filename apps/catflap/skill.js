@@ -222,7 +222,17 @@ function createApp({ config, client, logger = createLogger(config) }) {
       slots: {
         catname: "PetName",
       },
-      utterances: ["how old is {catname}", "how old {catname} is"],
+      utterances: [
+        "how old is {catname}",
+        "how old {catname} is",
+        "how old is {catname} now",
+        "tell me how old {catname} is",
+        "what age is {catname}",
+        "what age {catname} is",
+        "what is the age of {catname}",
+        "how many years old is {catname}",
+        "when was {catname} born",
+      ],
     },
     requireCat(function (req, res) {
       logger.info("GetAgeOfCatIntent");
@@ -408,6 +418,11 @@ function createApp({ config, client, logger = createLogger(config) }) {
         "when did {catname} come {inout}",
         "when did {catname} go {inout}",
         "how long has {catname} been {inout}",
+        "how long has {catname} been {inout} for",
+        "how long {catname} has been {inout}",
+        "how long ago did {catname} go {inout}",
+        "how long ago did {catname} come {inout}",
+        "since when has {catname} been {inout}",
       ],
     },
     requireCat(function (req, res) {
@@ -428,7 +443,16 @@ function createApp({ config, client, logger = createLogger(config) }) {
         catname: "PetName",
         inout: "InOut",
       },
-      utterances: ["{catname} is {inout}"],
+      utterances: [
+        "{catname} is {inout}",
+        "{catname} is {inout} now",
+        "{catname} has gone {inout}",
+        "{catname} has come {inout}",
+        "{catname} went {inout}",
+        "{catname} came {inout}",
+        "mark {catname} as {inout}",
+        "set {catname} to {inout}",
+      ],
     },
     requireCat(async function (req, res) {
       logger.info("SetLocationOfCatIntent");
@@ -457,7 +481,16 @@ function createApp({ config, client, logger = createLogger(config) }) {
         catname: "PetName",
         inout: "InOut",
       },
-      utterances: ["to keep {catname} {inout}", "to let {catname} {inout}"],
+      utterances: [
+        "to keep {catname} {inout}",
+        "to let {catname} {inout}",
+        "to allow {catname} {inout}",
+        "to lock {catname} {inout}",
+        "keep {catname} {inout}",
+        "let {catname} {inout}",
+        "allow {catname} {inout}",
+        "lock {catname} {inout}",
+      ],
     },
     requireCat(async function (req, res) {
       logger.info("SetCatPermissionIntent");

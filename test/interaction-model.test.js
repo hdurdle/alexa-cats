@@ -140,3 +140,16 @@ test("accented cat names get a plain synonym", () => {
   assert.deepEqual(petName.name.synonyms, ["bronte"]);
   assert.equal(petName.id, "BRONTE");
 });
+
+test("intents that take a cat name have enough samples", () => {
+  // with only a couple of samples Alexa often fails to fill catname
+  const model = buildModel(fixture("config.json")).interactionModel;
+  model.languageModel.intents
+    .filter((x) => (x.slots || []).some((slot) => slot.name === "catname"))
+    .forEach((intent) =>
+      assert.ok(
+        intent.samples.length >= 6,
+        `${intent.name} has only ${intent.samples.length} samples`,
+      ),
+    );
+});
