@@ -720,4 +720,4 @@ function createApp({ config, client, logger = createLogger(config) }) {
   return alexaApp;
 }
 
-module.exports = { createApp, createLogger };
+module.exports = { createApp, createLogger, WHICH_CAT };

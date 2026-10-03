@@ -368,8 +368,10 @@
               "name": "catname",
               "type": "PetName",
               "confirmationRequired": false,
-              "elicitationRequired": false,
-              "prompts": {}
+              "elicitationRequired": true,
+              "prompts": {
+                "elicitation": "Elicit.Slot.GetAgeOfCatIntent.catname"
+              }
             }
           ]
         },
@@ -383,8 +385,10 @@
               "name": "catname",
               "type": "PetName",
               "confirmationRequired": false,
-              "elicitationRequired": false,
-              "prompts": {}
+              "elicitationRequired": true,
+              "prompts": {
+                "elicitation": "Elicit.Slot.GetLocationOfCatIntent.catname"
+              }
             }
           ]
         },
@@ -398,8 +402,10 @@
               "name": "catname",
               "type": "PetName",
               "confirmationRequired": false,
-              "elicitationRequired": false,
-              "prompts": {}
+              "elicitationRequired": true,
+              "prompts": {
+                "elicitation": "Elicit.Slot.GetCatInLocationDurationIntent.catname"
+              }
             },
             {
               "name": "inout",
@@ -420,8 +426,10 @@
               "name": "catname",
               "type": "PetName",
               "confirmationRequired": false,
-              "elicitationRequired": false,
-              "prompts": {}
+              "elicitationRequired": true,
+              "prompts": {
+                "elicitation": "Elicit.Slot.SetLocationOfCatIntent.catname"
+              }
             },
             {
               "name": "inout",
@@ -442,8 +450,10 @@
               "name": "catname",
               "type": "PetName",
               "confirmationRequired": false,
-              "elicitationRequired": false,
-              "prompts": {}
+              "elicitationRequired": true,
+              "prompts": {
+                "elicitation": "Elicit.Slot.SetCatPermissionIntent.catname"
+              }
             },
             {
               "name": "inout",
@@ -471,6 +481,53 @@
         }
       ],
       "delegationStrategy": "SKILL_RESPONSE"
-    }
+    },
+    "prompts": [
+      {
+        "id": "Elicit.Slot.GetAgeOfCatIntent.catname",
+        "variations": [
+          {
+            "type": "PlainText",
+            "value": "Which cat do you mean?"
+          }
+        ]
+      },
+      {
+        "id": "Elicit.Slot.GetLocationOfCatIntent.catname",
+        "variations": [
+          {
+            "type": "PlainText",
+            "value": "Which cat do you mean?"
+          }
+        ]
+      },
+      {
+        "id": "Elicit.Slot.GetCatInLocationDurationIntent.catname",
+        "variations": [
+          {
+            "type": "PlainText",
+            "value": "Which cat do you mean?"
+          }
+        ]
+      },
+      {
+        "id": "Elicit.Slot.SetLocationOfCatIntent.catname",
+        "variations": [
+          {
+            "type": "PlainText",
+            "value": "Which cat do you mean?"
+          }
+        ]
+      },
+      {
+        "id": "Elicit.Slot.SetCatPermissionIntent.catname",
+        "variations": [
+          {
+            "type": "PlainText",
+            "value": "Which cat do you mean?"
+          }
+        ]
+      }
+    ]
   }
 }

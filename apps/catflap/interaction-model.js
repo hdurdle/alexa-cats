@@ -1,6 +1,6 @@
 // Builds the Alexa interaction model from the skill's own intents and the
 // slot values derived from config, so the model can't drift from the code.
-const { createApp } = require("./skill");
+const { createApp, WHICH_CAT } = require("./skill");
 
 const INVOCATION_NAME = "cat flap";
 
@@ -30,13 +30,17 @@ function buildModel(config) {
   );
 
   // Dialog directives (ConfirmIntent before locking cats out, ElicitSlot when
-  // Alexa didn't catch a cat's name) need the intent in the dialog model. The
-  // skill drives the dialog itself, so nothing is required here.
+  // Alexa didn't catch a cat's name) need a dialog model, and Alexa only
+  // counts it as one if some slot is required. So catname is marked required
+  // with a prompt, as the original hand-made model did. With SKILL_RESPONSE
+  // delegation Alexa still sends the request to the skill, which asks for the
+  // name itself (see requireCat in skill.js).
   const dialogIntents = languageModel.intents.filter((intent) =>
     (intent.slots || []).some(
       (slot) => slot.name === "catname" || slot.name === "lockmode",
     ),
   );
+  const prompts = [];
   dialogIntents.forEach((intent) =>
     intent.slots
       .filter((slot) => slot.name === "catname")
@@ -48,16 +52,29 @@ function buildModel(config) {
       delegationStrategy: "SKILL_RESPONSE",
       confirmationRequired: false,
       prompts: {},
-      slots: intent.slots.map((slot) => ({
-        name: slot.name,
-        type: slot.type,
-        confirmationRequired: false,
-        elicitationRequired: false,
-        prompts: {},
-      })),
+      slots: intent.slots.map((slot) => {
+        const dialogSlot = {
+          name: slot.name,
+          type: slot.type,
+          confirmationRequired: false,
+          elicitationRequired: false,
+          prompts: {},
+        };
+        if (slot.name === "catname") {
+          const id = `Elicit.Slot.${intent.name}.catname`;
+          prompts.push({
+            id,
+            variations: [{ type: "PlainText", value: WHICH_CAT }],
+          });
+          dialogSlot.elicitationRequired = true;
+          dialogSlot.prompts = { elicitation: id };
+        }
+        return dialogSlot;
+      }),
     })),
     delegationStrategy: "SKILL_RESPONSE",
   };
+  model.interactionModel.prompts = prompts;
 
   return model;
 }

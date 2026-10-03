@@ -86,6 +86,34 @@ test("samples keep their {slot} references", () => {
   });
 });
 
+test("slot samples come with a dialog model Alexa accepts", () => {
+  // Alexa rejects slot samples unless the dialog model has a required slot,
+  // and every prompt the dialog refers to must exist
+  const model = buildModel(fixture("config.json")).interactionModel;
+  const promptIds = model.prompts.map((x) => x.id);
+  const dialogSlots = model.dialog.intents.flatMap((x) => x.slots);
+
+  assert.ok(dialogSlots.some((x) => x.elicitationRequired));
+  dialogSlots
+    .filter((x) => x.elicitationRequired)
+    .forEach((x) => assert.ok(promptIds.includes(x.prompts.elicitation)));
+
+  model.languageModel.intents.forEach((intent) =>
+    (intent.slots || [])
+      .filter((slot) => slot.samples.length > 0)
+      .forEach((slot) =>
+        assert.ok(
+          model.dialog.intents.some(
+            (x) =>
+              x.name === intent.name &&
+              x.slots.some((s) => s.name === slot.name),
+          ),
+          `${intent.name}.${slot.name} has samples but no dialog entry`,
+        ),
+      ),
+  );
+});
+
 test("cat name slots can be elicited", () => {
   const model = buildModel(fixture("config.json")).interactionModel;
   const intent = model.languageModel.intents.find(
