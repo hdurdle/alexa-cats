@@ -247,8 +247,8 @@ test("help keeps the session open", async () => {
   assert.equal(response.response.shouldEndSession, false);
 });
 
-test("launch has a reprompt", async () => {
-  const { app } = setup();
+test("launch has a reprompt and doesn't call SureFlap", async () => {
+  const { app } = setup({ getPets: async () => assert.fail("should not fetch") });
   const response = await app.request(h.launchRequest());
   assert.ok(response.response.reprompt);
 });

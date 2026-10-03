@@ -1,24 +1,33 @@
 {
   "name": "alexa-cats",
-  "version": "1.0.0",
-  "description": "",
+  "version": "2.0.0",
+  "description": "Alexa skill that says where your cats are, using SureFlap pet door data",
   "main": "server.js",
-  "dependencies": {
-    "alexa-app-server": "^3.0.2"
+  "private": true,
+  "engines": {
+    "node": ">=22"
   },
-  "devDependencies": {},
   "scripts": {
-    "test": "node --test test/*.test.js",
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "node --test test/*.test.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hdurdle/alexa-cats.git"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Howard Durdle <hdurdle@users.noreply.github.com>",
+  "license": "GPL-3.0-only",
   "bugs": {
     "url": "https://github.com/hdurdle/alexa-cats/issues"
   },
-  "homepage": "https://github.com/hdurdle/alexa-cats#readme"
+  "homepage": "https://github.com/hdurdle/alexa-cats#readme",
+  "dependencies": {
+    "alexa-app": "^4.2.3",
+    "express": "^5.2.1",
+    "moment": "^2.31.0",
+    "winston": "^3.19.0"
+  },
+  "overrides": {
+    "alexa-verifier-middleware": "file:./stubs/alexa-verifier-middleware"
+  }
 }

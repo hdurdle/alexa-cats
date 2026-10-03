@@ -1,7 +1,9 @@
 {
-  "token": "your_sureflap_token_from_their_API",
-  "applicationId": "amzn1.ask.skill.your-skill-id",
+  "email": "you@example.com",
+  "password": "your-sureflap-password",
+  "token": "",
   "household": 1234,
+  "applicationId": "",
   "logLevel": "info",
   "flaps": [
     {

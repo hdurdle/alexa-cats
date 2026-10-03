@@ -1,0 +1,7 @@
+{
+  "name": "alexa-verifier-middleware",
+  "version": "0.0.0-stub",
+  "description": "Replaces alexa-app's bundled verifier, which is unused here (see apps/catflap/verify.js) and pulls in vulnerable node-forge and validator versions.",
+  "main": "index.js",
+  "license": "GPL-3.0-only"
+}

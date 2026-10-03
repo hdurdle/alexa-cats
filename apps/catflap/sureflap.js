@@ -1,92 +1,92 @@
 // SureFlap API client.
-const rp = require("request-promise");
-const https = require("https");
+//
+// Authenticates with email and password when they are configured, caching the
+// token and logging in again once if a request gets a 401. A static token is
+// used as-is when no login details are set.
+const crypto = require("crypto");
 
-const API_HOST = "app.api.surehub.io";
+const API_URL = "https://app.api.surehub.io/api";
 
-function createClient(config) {
-  const authToken = "Bearer " + config.token;
+function createClient(config, { fetch = globalThis.fetch, timeoutMs = 5000 } = {}) {
+  const canLogin = Boolean(config.email && config.password);
+  const deviceId = String(crypto.randomInt(1e9, 1e10));
+  let token = config.token || null;
+  let pendingLogin = null;
 
-  function get(path, qs) {
-    return rp({
-      uri: "https://" + API_HOST + path,
-      qs: qs,
-      headers: { Authorization: authToken },
-      json: true,
-    }).then((result) => result.data);
+  async function call(method, path, body, auth = true) {
+    const headers = { Accept: "application/json" };
+    if (body) headers["Content-Type"] = "application/json";
+    if (auth) headers.Authorization = "Bearer " + token;
+
+    const res = await fetch(API_URL + path, {
+      method,
+      headers,
+      body: body ? JSON.stringify(body) : undefined,
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+    if (!res.ok) {
+      const error = new Error(`SureFlap ${method} ${path}: ${res.status}`);
+      error.status = res.status;
+      throw error;
+    }
+    const text = await res.text();
+    return text ? JSON.parse(text) : {};
   }
 
-  function send(method, path, body) {
-    const data = JSON.stringify(body);
-    return httpPost({
-      data: data,
-      options: {
-        host: API_HOST,
-        path: path,
-        port: 443,
-        method: method,
-        headers: {
-          Authorization: authToken,
-          "Content-Type": "application/json",
-          "Content-Length": Buffer.byteLength(data),
+  // concurrent requests share one login
+  function login() {
+    if (!pendingLogin) {
+      pendingLogin = call(
+        "POST",
+        "/auth/login",
+        {
+          email_address: config.email,
+          password: config.password,
+          device_id: deviceId,
         },
-      },
-    });
+        false
+      )
+        .then((result) => {
+          token = result.data.token;
+        })
+        .finally(() => {
+          pendingLogin = null;
+        });
+    }
+    return pendingLogin;
+  }
+
+  async function request(method, path, body) {
+    if (!token && canLogin) await login();
+    try {
+      return await call(method, path, body);
+    } catch (error) {
+      if (error.status !== 401 || !canLogin) throw error;
+      await login();
+      return call(method, path, body);
+    }
   }
 
   return {
-    getPets: () =>
-      get("/api/household/" + config.household + "/pet", {
-        with: ["position", "tag"],
-      }),
-    getDevices: () => get("/api/device/", { with: "status" }),
+    getPets: async () =>
+      (
+        await request(
+          "GET",
+          `/household/${config.household}/pet?with[]=position&with[]=tag`
+        )
+      ).data,
+    getDevices: async () =>
+      (await request("GET", "/device?with[]=status")).data,
     // where: 1 = inside, 2 = outside
     setPosition: (petId, where) =>
-      send("POST", "/api/pet/" + petId + "/position", {
+      request("POST", `/pet/${petId}/position`, {
         since: new Date().toISOString(),
-        where: where,
+        where,
       }),
     // profile: 2 = allowed out, 3 = kept in
     setTagProfile: (deviceId, tagId, profile) =>
-      send("PUT", "/api/device/" + deviceId + "/tag/" + tagId, {
-        profile: profile,
-      }),
+      request("PUT", `/device/${deviceId}/tag/${tagId}`, { profile }),
   };
-}
-
-function httpPost(postObject) {
-  return new Promise(function (resolve, reject) {
-    var postOptions = postObject.options;
-    var postData = postObject.data;
-
-    const postRequest = https.request(postOptions, function (res) {
-      res.setEncoding("utf8");
-      let returnData = "";
-
-      if (res.statusCode < 200 || res.statusCode >= 300) {
-        return reject(
-          new Error(
-            `${res.statusCode}: ${res.req.getHeader("host")} ${res.req.path}`
-          )
-        );
-      }
-
-      res.on("data", function (chunk) {
-        returnData += chunk;
-      });
-
-      res.on("end", () => {
-        resolve(JSON.parse(returnData));
-      });
-
-      res.on("error", (error) => {
-        reject(error);
-      });
-    });
-
-    postRequest.write(postData);
-    postRequest.end();
-  });
 }
 
 module.exports = { createClient };

@@ -9,6 +9,7 @@ services:
     build: .
     container_name: alexa-cats
     restart: unless-stopped
+    init: true
     expose:
       - 8080
     volumes:

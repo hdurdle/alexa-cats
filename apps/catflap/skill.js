@@ -25,10 +25,10 @@ function createLogger(config) {
   });
 }
 
-// built-in intents and session end don't need SureFlap data
+// only the skill's own intents need SureFlap data; launch, session end and
+// built-in intents don't
 function needsData(request) {
-  if (request.type() === "SessionEndedRequest") return false;
-  if (request.type() !== "IntentRequest") return true;
+  if (request.type() !== "IntentRequest") return false;
   return !request.data.request.intent.name.startsWith("AMAZON.");
 }
 
@@ -47,16 +47,17 @@ function createApp({ config, client, logger = createLogger(config) }) {
   const allInsideLocations = [...new Set(flaps.map((x) => x.in))];
 
   const alexaApp = new alexa.app("catflap");
-  alexaApp.id = config.applicationId;
 
   // Each request gets its own copy of the SureFlap data, on req.ctx, so
   // concurrent requests can't see each other's state.
   alexaApp.pre = async function (request) {
     if (!needsData(request)) return;
 
-    const pets = await client.getPets();
+    const [pets, devices] = await Promise.all([
+      client.getPets(),
+      client.getDevices(),
+    ]);
     logger.debug(pets);
-    const devices = await client.getDevices();
     logger.debug(devices);
 
     request.ctx = {
