@@ -102,6 +102,13 @@ is set by hand in the app, and this entry covers that case.
 Only cats listed here are reported. `synonyms` are other names Alexa should
 recognise. Add `"dod"` to retire a cat without deleting it.
 
+Names are matched ignoring accents and case, and small slips are forgiven, so
+"zoe" finds "Zoë". Occasionally Alexa won't recognise a particular name even
+though it is listed: the cat-name slot arrives empty and the skill asks "Which
+cat do you mean?" every time. If that happens, give the cat a nickname Alexa
+does recognise in `synonyms`, then rebuild the model. Replies still use the
+cat's real name.
+
 ### 2. Run it
 
 With Docker Compose:
