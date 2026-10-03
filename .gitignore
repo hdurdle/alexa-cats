@@ -68,3 +68,6 @@ sureflap.token
 config.json
 .idea
 notes.txt
+
+# local compose overrides
+docker-compose.override.yml

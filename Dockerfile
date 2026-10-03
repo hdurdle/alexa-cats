@@ -1,24 +1,22 @@
-FROM node:10-alpine
+FROM node:20-alpine
 
 WORKDIR /app
+ENV NODE_ENV=production
 
-RUN apk --no-cache add tar curl && \
-  curl -L https://github.com/hdurdle/alexa-cats/archive/master.tar.gz | tar xz --strip-components=1 -C /app && \
-  npm install --production && \
-  rm -rf /tmp/* /root/.npm
+# install deps first so they cache between code changes
+COPY package*.json ./
+COPY apps/catflap/package*.json apps/catflap/
+RUN npm ci --omit=dev && \
+  cd apps/catflap && npm ci --omit=dev && \
+  npm cache clean --force
 
-WORKDIR /app/apps/catflap
-
-RUN npm install --production && \
-  rm -rf /tmp/* /root/.npm
-
-WORKDIR /app
+COPY . .
 
 EXPOSE 8080
 
 USER node
 
-HEALTHCHECK --interval=1m --timeout=2s \
-  CMD curl -LSs http://localhost:8080/alexa/catflap?schema || exit 1
+HEALTHCHECK --interval=60s --timeout=5s --start-period=15s --retries=3 \
+  CMD node apps/catflap/healthcheck.js
 
 CMD ["node", "server.js"]

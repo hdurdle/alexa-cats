@@ -1,0 +1,16 @@
+# Generic stack. Put host-specific settings (reverse proxy labels, networks)
+# in docker-compose.override.yml next to this file; it is git-ignored and
+# docker compose merges it automatically.
+name: alexa-cats
+
+services:
+  alexa-cats:
+    image: alexa-cats
+    build: .
+    container_name: alexa-cats
+    restart: unless-stopped
+    expose:
+      - 8080
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./config.json:/app/apps/catflap/config.json:ro
