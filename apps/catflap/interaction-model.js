@@ -1,13 +1,15 @@
 // Builds the Alexa interaction model from the skill's own intents and the
 // slot values derived from config, so the model can't drift from the code.
 const { createApp, WHICH_CAT } = require("./skill");
+const { normalizeName } = require("./names");
 
 const INVOCATION_NAME = "cat flap";
 
 const silentLogger = { error() {}, warn() {}, info() {}, debug() {} };
 
+// "Brontë" -> "BRONTE", "keep in" -> "KEEP_IN"
 function slotId(value) {
-  return value.toUpperCase().replace(/[^A-Z0-9]+/g, "_");
+  return normalizeName(value).toUpperCase().replace(/ /g, "_");
 }
 
 function buildModel(config) {

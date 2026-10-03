@@ -138,4 +138,5 @@ test("accented cat names get a plain synonym", () => {
     .interactionModel.languageModel.types.find((x) => x.name === "PetName")
     .values.find((x) => x.name.value === "Brontë");
   assert.deepEqual(petName.name.synonyms, ["bronte"]);
+  assert.equal(petName.id, "BRONTE");
 });
