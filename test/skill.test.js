@@ -110,3 +110,150 @@ test("keep a cat in sets the profile on curfew flaps only", async () => {
   assert.equal(speech, "Okay, Garfield will be kept in.");
   assert.deepEqual(client.calls, [["setTagProfile", 1001, 9001, 3]]);
 });
+
+// regression tests for crash paths that used to end in "Aw. Badness."
+
+test("where is a known cat with no dob entry", async () => {
+  const { speech } = await ask("GetLocationOfCatIntent", [cat("Stray")]);
+  assert.equal(speech, "Sorry, I don't recognise that cat.");
+});
+
+test("how old is an unknown cat", async () => {
+  const { speech } = await ask("GetAgeOfCatIntent", [
+    h.unmatched("catname", "Rover"),
+  ]);
+  assert.equal(speech, "Sorry, I don't recognise that cat.");
+});
+
+test("how long for an unknown cat", async () => {
+  const { speech } = await ask("GetCatInLocationDurationIntent", [
+    h.unmatched("catname", "Rover"),
+  ]);
+  assert.equal(speech, "Sorry, I don't recognise that cat.");
+});
+
+test("entity resolution errors don't leak the slot object", async () => {
+  const { speech } = await ask("GetLocationOfCatIntent", [
+    h.unmatched("catname", "Garfield", "ER_ERROR_TIMEOUT"),
+  ]);
+  assert.equal(speech, "Sorry, I don't recognise that cat.");
+});
+
+test("setting an unknown cat makes no API call", async () => {
+  const { speech, client } = await ask("SetLocationOfCatIntent", [
+    h.unmatched("catname", "Rover"),
+    inOut("in"),
+  ]);
+  assert.equal(speech, "Sorry, I don't recognise that cat.");
+  assert.deepEqual(client.calls, []);
+});
+
+test("longest duration with nobody there", async () => {
+  const { speech } = await ask("GetLongestDurationIntent", [
+    location("conservatory"),
+  ]);
+  assert.equal(speech, "No kitties are in the conservatory.");
+});
+
+test("who is in, with an unresolved slot", async () => {
+  const { speech } = await ask("GetCatsInLocationIntent", [
+    h.unmatched("inout", "indoors"),
+  ]);
+  assert.equal(speech, "Garfield is inside.");
+});
+
+test("inside doesn't depend on flap order", async () => {
+  const config = h.fixture("config.json");
+  config.flaps.reverse();
+  const client = h.stubClient();
+  const app = createApp({ config, client, logger: h.silentLogger });
+  const response = await app.request(
+    h.intentRequest("SetLocationOfCatIntent", [cat("Felix"), inOut("in")])
+  );
+  assert.equal(h.speechOf(response), "Okay, Felix is inside.");
+  assert.deepEqual(client.calls, [["setPosition", 502, 1]]);
+});
+
+test("curfew writes are awaited and failures reported", async () => {
+  const config = h.fixture("config.json");
+  config.flaps.forEach((x) => (x.curfew = x.id > 0));
+  const client = h.stubClient({
+    setTagProfile: async (deviceId) => {
+      if (deviceId === 1002) throw new Error("500");
+      client.calls.push(["setTagProfile", deviceId]);
+    },
+  });
+  const app = createApp({ config, client, logger: h.silentLogger });
+  const response = await app.request(
+    h.intentRequest("SetCatPermissionIntent", [cat("Garfield"), inOut("out")])
+  );
+  assert.equal(
+    h.speechOf(response),
+    "Okay, Garfield is allowed out. But I couldn't update conservatory."
+  );
+  assert.deepEqual(client.calls, [["setTagProfile", 1001]]);
+});
+
+test("each request sees its own data", async () => {
+  // the first request's device call is slow, so the second request's pet
+  // data arrives while the first is still in flight
+  const oldPets = h.fixture("pets.json");
+  const newPets = oldPets.map((x) =>
+    x.name === "Garfield" ? { ...x, position: { ...x.position, where: 2 } } : x
+  );
+  const petResponses = [oldPets, newPets];
+  const delays = [30, 0];
+  const { app } = setup({
+    getPets: async () => petResponses.shift(),
+    getDevices: () =>
+      new Promise((resolve) =>
+        setTimeout(() => resolve(h.fixture("devices.json")), delays.shift())
+      ),
+  });
+
+  const first = app.request(
+    h.intentRequest("GetCatsInLocationIntent", [inOut("out")])
+  );
+  const second = app.request(
+    h.intentRequest("GetCatsInLocationIntent", [inOut("out")])
+  );
+
+  assert.equal(h.speechOf(await first), "Felix is outside.");
+  assert.equal(h.speechOf(await second), "Felix and Garfield are outside.");
+});
+
+test("API failure gives a spoken error, not a crash", async () => {
+  const { speech } = await ask("GetLocationOfCatIntent", [cat("Garfield")], {
+    getPets: async () => {
+      throw new Error("timeout");
+    },
+  });
+  assert.equal(speech, "Aw. Badness.");
+});
+
+for (const intent of ["AMAZON.StopIntent", "AMAZON.CancelIntent"]) {
+  test(intent + " says bye without calling SureFlap", async () => {
+    const { response, speech } = await ask(intent, [], {
+      getPets: async () => assert.fail("should not fetch"),
+    });
+    assert.equal(speech, "Bye.");
+    assert.equal(response.response.shouldEndSession, true);
+  });
+}
+
+test("help keeps the session open", async () => {
+  const { response, speech } = await ask("AMAZON.HelpIntent");
+  assert.match(speech, /^You can ask where a cat is/);
+  assert.equal(response.response.shouldEndSession, false);
+});
+
+test("launch has a reprompt", async () => {
+  const { app } = setup();
+  const response = await app.request(h.launchRequest());
+  assert.ok(response.response.reprompt);
+});
+
+test("session end doesn't call SureFlap", async () => {
+  const { app } = setup({ getPets: async () => assert.fail("should not fetch") });
+  await app.request(h.sessionEndedRequest());
+});
