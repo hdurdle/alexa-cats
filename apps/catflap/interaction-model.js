@@ -1,7 +1,7 @@
 // Builds the Alexa interaction model from the skill's own intents and the
 // slot values derived from config, so the model can't drift from the code.
 const { createApp, WHICH_CAT } = require("./skill");
-const { normalizeName } = require("./names");
+const { normalizeName, stripAccents } = require("./names");
 
 const INVOCATION_NAME = "cat flap";
 
@@ -24,10 +24,20 @@ function buildModel(config) {
     intent.samples = [...(app.intents[intent.name].utterances || [])];
   });
 
+  // Alexa mishandles accented slot values ("Brontë" never matched, and its
+  // utterance profiler failed), so the model only holds plain spellings. The
+  // skill matches names ignoring accents, so "Bronte" still finds "Brontë".
   languageModel.types.forEach((type) =>
     type.values.forEach((value) => {
-      value.id = slotId(value.name.value);
-      if (value.name.synonyms.length === 0) delete value.name.synonyms;
+      const plain = stripAccents(value.name.value);
+      const synonyms = [
+        ...new Set(value.name.synonyms.map(stripAccents)),
+      ].filter((x) => normalizeName(x) !== normalizeName(plain));
+
+      value.name.value = plain;
+      value.id = slotId(plain);
+      if (synonyms.length > 0) value.name.synonyms = synonyms;
+      else delete value.name.synonyms;
     }),
   );
 

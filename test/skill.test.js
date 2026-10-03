@@ -496,3 +496,12 @@ test("session end logs Alexa's reason and error", async () => {
     "session ended: ERROR - INVALID_RESPONSE: The response is invalid",
   ]);
 });
+
+test("Alexa resolving the plain spelling finds Brontë", async () => {
+  const response = await withBronte().request(
+    h.intentRequest("GetAgeOfCatIntent", [
+      h.matched("catname", "bronte", "Bronte"),
+    ]),
+  );
+  assert.match(h.speechOf(response), /^Brontë is 5 years/);
+});

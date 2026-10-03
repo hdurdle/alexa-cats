@@ -4,7 +4,7 @@ const alexa = require("alexa-app");
 const winston = require("winston");
 
 const model = require("./model");
-const { normalizeName, sameName, matchName } = require("./names");
+const { sameName, matchName } = require("./names");
 const {
   formatCatList,
   describeGroups,
@@ -162,21 +162,9 @@ function createApp({ config, client, logger = createLogger(config) }) {
     { value: "in", synonyms: ["inside", "indoors", "home", "here"] },
     { value: "out", synonyms: ["outside", "outdoors"] },
   ]);
-  // the accent-free spelling is added as a synonym, so Alexa resolves
-  // "bronte" to "Brontë"
   alexaApp.customSlot(
     "PetName",
-    activeCats.map((x) => {
-      const plain = normalizeName(x.name);
-      const synonyms = [...(x.synonyms || [])];
-      if (
-        plain !== x.name.toLowerCase() &&
-        !synonyms.some((y) => sameName(y, plain))
-      ) {
-        synonyms.push(plain);
-      }
-      return { value: x.name, synonyms };
-    }),
+    activeCats.map((x) => ({ value: x.name, synonyms: x.synonyms || [] })),
   );
   alexaApp.customSlot("PetLocation", [
     ...new Set([

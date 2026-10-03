@@ -1,11 +1,16 @@
 // Forgiving cat name matching: ignores accents, case and punctuation, and
 // accepts near misses, so "bronte" or "brontay" finds "Brontë".
 
+// "Brontë" -> "Bronte"
+function stripAccents(text) {
+  return String(text)
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "");
+}
+
 // "Brontë" -> "bronte", "Mr. Tibbs" -> "mr tibbs"
 function normalizeName(name) {
-  return String(name)
-    .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "")
+  return stripAccents(name)
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, " ")
     .trim();
@@ -64,4 +69,10 @@ function matchName(heard, cats) {
   return names.size === 1 ? [...names][0] : null;
 }
 
-module.exports = { normalizeName, sameName, editDistance, matchName };
+module.exports = {
+  stripAccents,
+  normalizeName,
+  sameName,
+  editDistance,
+  matchName,
+};

@@ -2,6 +2,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 
 const {
+  stripAccents,
   normalizeName,
   editDistance,
   matchName,
@@ -50,4 +51,9 @@ test("names that are too different don't match", () => {
 test("a tie between two cats doesn't guess", () => {
   const twins = [{ name: "Bella" }, { name: "Della" }];
   assert.equal(matchName("Kella", twins), null);
+});
+
+test("stripAccents keeps case and spacing", () => {
+  assert.equal(stripAccents("Brontë"), "Bronte");
+  assert.equal(stripAccents("Zoë-Anne"), "Zoe-Anne");
 });
