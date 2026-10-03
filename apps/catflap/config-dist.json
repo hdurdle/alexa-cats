@@ -1,5 +1,6 @@
 {
   "token": "your_sureflap_token_from_their_API",
+  "applicationId": "amzn1.ask.skill.your-skill-id",
   "household": 1234,
   "logLevel": "info",
   "flaps": [
@@ -13,7 +14,9 @@
       "id": 12345,
       "in": "house",
       "out": "outside",
-      "name": "back door"
+      "name": "back door",
+      "icon": "fa-home",
+      "curfew": true
     }
   ],
   "catdobs": [

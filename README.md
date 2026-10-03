@@ -54,6 +54,7 @@ Then edit `config.json` (it is git-ignored):
 | --- | --- |
 | `token` | SureFlap API bearer token |
 | `household` | SureFlap household ID |
+| `applicationId` | Alexa skill ID (optional) |
 | `logLevel` | winston log level (overridden by `LOG_LEVEL` env var) |
 | `flaps` | Topology of your pet doors (see below) |
 | `catdobs` | `{ "name", "dob" }` for each cat. Only cats listed here are reported. Add `"dod"` to retire a cat. |
@@ -70,8 +71,12 @@ Each pet door connects two places. When a cat last went *in* through a flap they
 Keep the `"id": 0` entry. SureFlap omits `device_id` when a pet's position is set manually in the
 app, and this entry covers that case.
 
-To let `SetCatPermissionIntent` change who's allowed out, add `"curfew": true` to the flaps it
-should update.
+Optional flap keys:
+
+- `"curfew": true` lets `SetCatPermissionIntent` change who's allowed out through that flap.
+- `"icon"` sets a Font Awesome class for the device (default `fa-home`).
+
+Each `in` location other than `inside` is spoken as "in the …", e.g. "in the house".
 
 ### 2. Run locally
 
@@ -108,7 +113,7 @@ services:
 2. Paste [interaction_model.json](apps/catflap/interaction_model.json) into the JSON editor, adjusted
    for your cats and locations.
 3. Set the endpoint to an HTTPS URL that reaches `/alexa/catflap` on this server.
-4. Put the skill ID in `alexa.applicationId` in [apps/catflap/package.json](apps/catflap/package.json).
+4. Optionally put the skill ID in `applicationId` in `config.json`.
 
 ## Security notes
 

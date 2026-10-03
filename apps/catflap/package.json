@@ -9,9 +9,6 @@
   "keywords": [],
   "author": "Howard Durdle <hdurdle@users.noreply.github.com>",
   "license": "GPL-3.0-only",
-  "alexa": {
-    "applicationId": "amzn1.ask.skill.your-skill-id"
-  },
   "dependencies": {
     "alexa-app": "^4.2.3",
     "alexa-app-server": "^3.0.2",

@@ -6,7 +6,8 @@ Development notes for this repo. See [README.md](README.md) for what the skill d
 
 This repo is public on GitHub.
 
-- Never commit `apps/catflap/config.json`, SureFlap tokens, household IDs or real device IDs.
+- Never commit `apps/catflap/config.json`, SureFlap tokens, household IDs, real device IDs,
+  the Alexa skill ID, or real room names. Anything specific to one household goes in config.
   `config.json` is in `.gitignore`. Keep placeholder values in `config-dist.json`.
 - Don't add home addresses, network details, hostnames or personal email addresses to source,
   docs or commit messages.
@@ -20,7 +21,7 @@ This repo is public on GitHub.
 - `apps/catflap/index.js`: the whole skill. It's a single `alexa-app` module.
 - `apps/catflap/interaction_model.json`: Alexa console interaction model, maintained by hand. Keep it in sync with the intents and utterances in `index.js`.
 - `apps/catflap/healthcheck.js`: standalone HTTP check. It isn't used by the Dockerfile, which curls `/alexa/catflap?schema` instead.
-- There are two `package.json` files. The root one only pulls in `alexa-app-server`. The skill's dependencies live in `apps/catflap/package.json`, and so does `alexa.applicationId`.
+- There are two `package.json` files. The root one only pulls in `alexa-app-server`. The skill's dependencies live in `apps/catflap/package.json`.
 
 ## Request flow
 
@@ -51,14 +52,8 @@ There are no tests, linter or CI. Dependabot raises dependency PRs.
 
 Check these before changing behaviour:
 
-- Values specific to one household are hardcoded in `index.js`:
-  - device IDs `11111` and `22222` are skipped as hubs
-  - flap names are mapped to Font Awesome icons
-  - `insideLocations`
-  - the battery check says "all okay" only when `okayFlaps.length === 3`
-
-  Moving these into config would be a good cleanup.
-- `sureflapDeviceData` (lowercase f) is assigned without declaration. The declared `sureFlapDeviceData` is never used. `flapId` in `SetCatPermissionIntent` is an implicit global too.
+- Devices without a battery reading (hubs) are skipped in `pre`. `insideLocations` is derived from the `in` values in `config.flaps`.
+- `flapId` in `SetCatPermissionIntent` is an implicit global.
 - `SetCatPermissionIntent` fires requests in `forEach(async …)` without awaiting them. It replies before the writes finish, and failures are unhandled.
 - `SetCatPermissionIntent` is registered in code but missing from `interaction_model.json`.
 - `getLocation` throws if a pet's `device_id` isn't in `config.flaps`.

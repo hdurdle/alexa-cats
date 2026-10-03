@@ -17,7 +17,8 @@ const config = require("./config.json");
 const flaps = config.flaps;
 const catdobs = config.catdobs;
 const authToken = "Bearer " + config.token;
-const insideLocations = ["house", "shed", "conservatory"];
+// locations that take "in the" in speech, e.g. "in the house"
+const insideLocations = flaps.map((x) => x.in).filter((x) => x !== "inside");
 
 const rpSureflapAPIOptions = {
   uri: "https://app.api.surehub.io/api/household/" + config.household + "/pet",
@@ -58,7 +59,7 @@ var alexaApp = new alexa.app("catflap");
 // Allow this module to be reloaded by hotswap when changed
 module.change_code = 1;
 
-alexaApp.id = require("./package.json").alexa.applicationId;
+alexaApp.id = config.applicationId;
 
 alexaApp.launch(function (request, response) {
   logger.info("launch");
@@ -73,13 +74,13 @@ alexaApp.pre = async function (request, response, type) {
   logger.info(sureFlapPetPositionData);
   await populateCats();
 
-  sureflapDeviceData = (await rp(rpSureflapAPIStatusOptions)).data;
-  logger.info(sureflapDeviceData);
+  sureFlapDeviceData = (await rp(rpSureflapAPIStatusOptions)).data;
+  logger.info(sureFlapDeviceData);
 
   flapsData = [];
 
-  sureflapDeviceData.forEach((flap) => {
-    if (flap.id === 11111 || flap.id === 22222) return; // don't need parents
+  sureFlapDeviceData.forEach((flap) => {
+    if (!flap.status || flap.status.battery === undefined) return; // hubs have no battery
 
     var batteryValue = parseFloat(flap.status.battery);
     var charge = "empty";
@@ -93,19 +94,8 @@ alexaApp.pre = async function (request, response, type) {
       charge = "full";
     }
 
-    var flapIcon = "fa-home";
-    if (flap.name == "Kitchen") {
-      flapIcon = "fa-home";
-    }
-    if (flap.name == "Conservatory") {
-      flapIcon = "fa-couch";
-    }
-    if (flap.name == "Shed Door") {
-      flapIcon = "fa-warehouse";
-    }
-    if (flap.name == "Upstairs") {
-      flapIcon = "fa-caret-square-up";
-    }
+    const flapConfig = flaps.find((x) => x.id === flap.id);
+    const flapIcon = (flapConfig && flapConfig.icon) || "fa-home";
 
     const flapInfo = {
       id: flap.id,
@@ -234,7 +224,6 @@ alexaApp.intent(
     var lowBatteryFlaps = flapsData.filter(
       (x) => x.battery < BATTERY_THRESHOLD
     );
-    var okayFlaps = flapsData.filter((x) => x.battery >= BATTERY_THRESHOLD);
 
     if (lowBatteryFlaps.length > 1) {
       for (let i = 0; i < lowBatteryFlaps.length - 1; i++) {
@@ -249,7 +238,7 @@ alexaApp.intent(
       speech += " battery is low.";
     }
 
-    if (okayFlaps.length === 3) {
+    if (lowBatteryFlaps.length === 0) {
       speech = "All the batteries are okay.";
     }
 
