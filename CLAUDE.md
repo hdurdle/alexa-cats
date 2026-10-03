@@ -20,7 +20,8 @@ This repo is public on GitHub.
 - `public_html/`: static placeholder page.
 - `apps/catflap/index.js`: the whole skill. It's a single `alexa-app` module.
 - `apps/catflap/interaction_model.json`: Alexa console interaction model, maintained by hand. Keep it in sync with the intents and utterances in `index.js`.
-- `apps/catflap/healthcheck.js`: standalone HTTP check. It isn't used by the Dockerfile, which curls `/alexa/catflap?schema` instead.
+- `apps/catflap/healthcheck.js`: HTTP check against `localhost:8080`, used by the Dockerfile `HEALTHCHECK`.
+- `Dockerfile` / `docker-compose.yml`: build from the local checkout (Node 20). Host-specific settings go in the git-ignored `docker-compose.override.yml`. Never commit that file.
 - There are two `package.json` files. The root one only pulls in `alexa-app-server`. The skill's dependencies live in `apps/catflap/package.json`.
 
 ## Request flow
@@ -58,5 +59,4 @@ Check these before changing behaviour:
 - `SetCatPermissionIntent` is registered in code but missing from `interaction_model.json`.
 - `getLocation` throws if a pet's `device_id` isn't in `config.flaps`.
 - Cats not listed in `config.catdobs` are silently left out of every answer.
-- `request` and `request-promise` are deprecated. The Docker base image is `node:10-alpine`, which is end of life.
-- The Dockerfile downloads `master` from GitHub instead of using the build context. Local edits aren't in an image until they're pushed.
+- `request` and `request-promise` are deprecated. Lockfiles are npm v1 format.

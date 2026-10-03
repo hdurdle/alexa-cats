@@ -92,20 +92,37 @@ Open `http://localhost:8080/alexa/catflap` to see the generated intents, slots a
 
 ### 3. Run with Docker
 
-The [Dockerfile](Dockerfile) downloads the `master` branch from GitHub rather than copying the
-local working tree, so push changes before building. Mount your config into the container:
+Clone the repo on the Docker host, put `config.json` in the repo root, and start the stack:
+
+```sh
+git clone https://github.com/hdurdle/alexa-cats.git && cd alexa-cats
+cp apps/catflap/config-dist.json config.json   # then fill it in
+docker compose up -d --build
+```
+
+[docker-compose.yml](docker-compose.yml) mounts `./config.json` read-only. The container runs as
+uid 1000, so the file must be readable by that user. `config.json` is excluded from the image.
+
+Put host-specific settings, such as reverse proxy labels and networks, in a
+`docker-compose.override.yml` next to it. Compose merges it automatically, and it is git-ignored.
+For example, behind Traefik:
 
 ```yaml
 services:
   alexa-cats:
-    build: .
-    container_name: alexa-cats
-    ports:
-      - 4040:8080
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /path/to/config.json:/app/apps/catflap/config.json:ro
+    networks: [traefik]
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.alexa-cats.rule=Host(`alexa.example.com`)"
+      - "traefik.http.routers.alexa-cats.entrypoints=websecure"
+      - "traefik.http.routers.alexa-cats.tls.certresolver=default"
+      - "traefik.http.services.alexa-cats.loadbalancer.server.port=8080"
+networks:
+  traefik:
+    external: true
 ```
+
+To update: `git pull && docker compose up -d --build`.
 
 ### 4. Create the Alexa Skill
 
