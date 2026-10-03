@@ -15,6 +15,7 @@ const {
 const BATTERY_THRESHOLD = 5.2;
 const UNKNOWN_CAT = "Sorry, I don't recognise that cat.";
 const WHICH_CAT = "Which cat do you mean?";
+const CAT_NAME_TYPE = "AMAZON.FirstName";
 const HELP =
   "You can ask where the cats are, who is outside, who has been out the " +
   "longest, who is locked in, or how the batteries are. You can also lock " +
@@ -162,8 +163,11 @@ function createApp({ config, client, logger = createLogger(config) }) {
     { value: "in", synonyms: ["inside", "indoors", "home", "here"] },
     { value: "out", synonyms: ["outside", "outdoors"] },
   ]);
+  // Cat names extend Amazon's built-in first-name type rather than a custom
+  // type: Alexa refused to put some real names (e.g. "Brontë") into a custom
+  // slot, but fills the built-in one, which is trained on first names.
   alexaApp.customSlot(
-    "PetName",
+    CAT_NAME_TYPE,
     activeCats.map((x) => ({ value: x.name, synonyms: x.synonyms || [] })),
   );
   alexaApp.customSlot("PetLocation", [
@@ -213,7 +217,7 @@ function createApp({ config, client, logger = createLogger(config) }) {
     "GetAgeOfCatIntent",
     {
       slots: {
-        catname: "PetName",
+        catname: CAT_NAME_TYPE,
       },
       utterances: [
         "how old is {catname}",
@@ -276,7 +280,7 @@ function createApp({ config, client, logger = createLogger(config) }) {
     "GetLocationOfCatIntent",
     {
       slots: {
-        catname: "PetName",
+        catname: CAT_NAME_TYPE,
       },
       utterances: [
         "where's {catname}",
@@ -403,7 +407,7 @@ function createApp({ config, client, logger = createLogger(config) }) {
     "GetCatInLocationDurationIntent",
     {
       slots: {
-        catname: "PetName",
+        catname: CAT_NAME_TYPE,
         inout: "InOut",
       },
       utterances: [
@@ -432,7 +436,7 @@ function createApp({ config, client, logger = createLogger(config) }) {
     "SetLocationOfCatIntent",
     {
       slots: {
-        catname: "PetName",
+        catname: CAT_NAME_TYPE,
         inout: "InOut",
       },
       utterances: [
@@ -470,7 +474,7 @@ function createApp({ config, client, logger = createLogger(config) }) {
     "SetCatPermissionIntent",
     {
       slots: {
-        catname: "PetName",
+        catname: CAT_NAME_TYPE,
         inout: "InOut",
       },
       utterances: [

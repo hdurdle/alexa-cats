@@ -23,7 +23,7 @@ test("slot values come from config", () => {
     model.languageModel.types.map((x) => [x.name, x.values]),
   );
 
-  assert.deepEqual(types.PetName, [
+  assert.deepEqual(types["AMAZON.FirstName"], [
     { id: "GARFIELD", name: { value: "Garfield", synonyms: ["Garfy"] } },
     { id: "FELIX", name: { value: "Felix" } },
   ]);
@@ -135,7 +135,7 @@ test("accented names keep their spelling and get a plain synonym", () => {
   const config = fixture("config.json");
   config.catdobs.push({ name: "Brontë", dob: "2021-04-01" });
   const values = buildModel(config).interactionModel.languageModel.types.find(
-    (x) => x.name === "PetName",
+    (x) => x.name === "AMAZON.FirstName",
   ).values;
   assert.deepEqual(
     values.find((x) => x.id === "BRONTE"),
@@ -151,7 +151,9 @@ test("accented synonyms get plain versions without duplicates", () => {
     synonyms: ["Zoë", "bronte"],
   });
   const bronte = buildModel(config)
-    .interactionModel.languageModel.types.find((x) => x.name === "PetName")
+    .interactionModel.languageModel.types.find(
+      (x) => x.name === "AMAZON.FirstName",
+    )
     .values.find((x) => x.id === "BRONTE");
   assert.deepEqual(bronte.name.synonyms, ["Zoë", "bronte", "zoe"]);
 });
@@ -177,4 +179,14 @@ test("no sample is only a slot", () => {
       assert.doesNotMatch(sample, /^\{\w+\}$/, `${intent.name}: "${sample}"`),
     ),
   );
+});
+
+test("cat names extend the built-in first-name type", () => {
+  const { languageModel } = buildModel(fixture("config.json")).interactionModel;
+  const catSlots = languageModel.intents
+    .flatMap((x) => x.slots || [])
+    .filter((x) => x.name === "catname");
+  assert.ok(catSlots.length > 0);
+  catSlots.forEach((slot) => assert.equal(slot.type, "AMAZON.FirstName"));
+  assert.ok(!languageModel.types.some((x) => x.name === "PetName"));
 });
