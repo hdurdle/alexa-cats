@@ -86,11 +86,19 @@ function ask(args, { dryRun = false, inherit = false } = {}) {
     console.log("  would run: ask " + args.join(" "));
     return {};
   }
-  const result = spawnSync("ask", args, {
-    encoding: "utf8",
-    stdio: inherit ? "inherit" : "pipe",
-    shell: process.platform === "win32",
-  });
+  // On Windows the ASK CLI is a .cmd file, which needs a shell, so quote the
+  // arguments ourselves (temp file paths can contain spaces)
+  const windows = process.platform === "win32";
+  const result = windows
+    ? spawnSync(["ask", ...args.map((x) => `"${x}"`)].join(" "), {
+        encoding: "utf8",
+        stdio: inherit ? "inherit" : "pipe",
+        shell: true,
+      })
+    : spawnSync("ask", args, {
+        encoding: "utf8",
+        stdio: inherit ? "inherit" : "pipe",
+      });
   if (result.error) {
     throw new Error("The ASK CLI isn't installed: " + result.error.message);
   }
