@@ -133,29 +133,29 @@ test("custom slot types used by intents are all defined", () => {
 
 test("accented names keep their spelling and get a plain synonym", () => {
   const config = fixture("config.json");
-  config.catdobs.push({ name: "Brontë", dob: "2021-04-01" });
+  config.catdobs.push({ name: "Chloë", dob: "2021-04-01" });
   const values = buildModel(config).interactionModel.languageModel.types.find(
     (x) => x.name === "AMAZON.FirstName",
   ).values;
   assert.deepEqual(
-    values.find((x) => x.id === "BRONTE"),
-    { id: "BRONTE", name: { value: "Brontë", synonyms: ["bronte"] } },
+    values.find((x) => x.id === "CHLOE"),
+    { id: "CHLOE", name: { value: "Chloë", synonyms: ["chloe"] } },
   );
 });
 
 test("accented synonyms get plain versions without duplicates", () => {
   const config = fixture("config.json");
   config.catdobs.push({
-    name: "Brontë",
+    name: "Chloë",
     dob: "2021-04-01",
-    synonyms: ["Zoë", "bronte"],
+    synonyms: ["Zoë", "chloe"],
   });
-  const bronte = buildModel(config)
+  const chloe = buildModel(config)
     .interactionModel.languageModel.types.find(
       (x) => x.name === "AMAZON.FirstName",
     )
-    .values.find((x) => x.id === "BRONTE");
-  assert.deepEqual(bronte.name.synonyms, ["Zoë", "bronte", "zoe"]);
+    .values.find((x) => x.id === "CHLOE");
+  assert.deepEqual(chloe.name.synonyms, ["Zoë", "chloe", "zoe"]);
 });
 
 test("intents that take a cat name have enough samples", () => {

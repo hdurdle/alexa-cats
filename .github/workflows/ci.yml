@@ -27,3 +27,4 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - run: docker build -t alexa-cats .
+      - run: docker build -f Dockerfile.tools -t alexa-cats-tools .

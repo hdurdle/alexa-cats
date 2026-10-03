@@ -87,6 +87,8 @@ function createClient(
         since: new Date().toISOString(),
         where,
       }),
+    // the account's households, devices and pets in one call (used by setup)
+    getStart: async () => (await request("GET", "/me/start")).data,
     // locking: 0 = unlocked, 1 = keep in, 2 = keep out, 3 = locked both ways
     setLocking: (deviceId, locking) =>
       request("PUT", `/device/${deviceId}/control`, { locking }),

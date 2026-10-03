@@ -1,14 +1,14 @@
 // Forgiving cat name matching: ignores accents, case and punctuation, and
-// accepts near misses, so "bronte" or "brontay" finds "Brontë".
+// accepts near misses, so "chloe" or "chloey" finds "Chloë".
 
-// "Brontë" -> "Bronte"
+// "Chloë" -> "Chloe"
 function stripAccents(text) {
   return String(text)
     .normalize("NFD")
     .replace(/\p{Diacritic}/gu, "");
 }
 
-// "Brontë" -> "bronte", "Mr. Tibbs" -> "mr tibbs"
+// "Chloë" -> "chloe", "Mr. Tibbs" -> "mr tibbs"
 function normalizeName(name) {
   return stripAccents(name)
     .toLowerCase()

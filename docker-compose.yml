@@ -22,3 +22,18 @@ services:
       options:
         max-size: 10m
         max-file: "3"
+
+  # Setup wizard and Alexa skill tools; only runs when asked, e.g.
+  #   docker compose run --rm setup scripts/setup.js
+  setup:
+    profiles: [tools]
+    image: alexa-cats-tools
+    build:
+      context: .
+      dockerfile: Dockerfile.tools
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./:/work
+      # Amazon developer sign-in for the ASK CLI (git-ignored)
+      - ./.ask:/root/.ask

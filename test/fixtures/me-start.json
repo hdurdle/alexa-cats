@@ -1,0 +1,39 @@
+{
+  "households": [
+    { "id": 1234, "name": "Home" },
+    { "id": 5678, "name": "Holiday cottage" }
+  ],
+  "devices": [
+    { "id": 1000, "product_id": 1, "household_id": 1234, "name": "Hub" },
+    { "id": 1001, "product_id": 6, "household_id": 1234, "name": "Back Door" },
+    {
+      "id": 1002,
+      "product_id": 3,
+      "household_id": 1234,
+      "name": "Garden Door"
+    },
+    { "id": 1003, "product_id": 4, "household_id": 1234, "name": "Feeder" },
+    {
+      "id": 2001,
+      "product_id": 6,
+      "household_id": 5678,
+      "name": "Cottage Flap"
+    }
+  ],
+  "pets": [
+    {
+      "id": 501,
+      "name": "Garfield",
+      "household_id": 1234,
+      "date_of_birth": "2018-06-19T00:00:00+00:00"
+    },
+    { "id": 502, "name": "Felix", "household_id": 1234, "date_of_birth": null },
+    {
+      "id": 503,
+      "name": "Tom",
+      "household_id": 1234,
+      "date_of_birth": "2015-03-01T00:00:00+01:00"
+    },
+    { "id": 601, "name": "Visitor", "household_id": 5678 }
+  ]
+}

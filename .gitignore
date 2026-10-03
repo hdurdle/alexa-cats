@@ -76,3 +76,6 @@ interaction_model.local.json
 
 # local planning notes
 plans/
+
+# Amazon developer sign-in used by the ASK CLI
+.ask/

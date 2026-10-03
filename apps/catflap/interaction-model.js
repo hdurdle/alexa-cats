@@ -7,7 +7,7 @@ const INVOCATION_NAME = "cat flap";
 
 const silentLogger = { error() {}, warn() {}, info() {}, debug() {} };
 
-// "Brontë" -> "BRONTE", "keep in" -> "KEEP_IN"
+// "Chloë" -> "CHLOE", "keep in" -> "KEEP_IN"
 function slotId(value) {
   return normalizeName(value).toUpperCase().replace(/ /g, "_");
 }
@@ -25,9 +25,9 @@ function buildModel(config) {
   });
 
   // Values keep their configured spelling, and any accented value or synonym
-  // also gets its plain spelling as a synonym, so Alexa resolves "bronte" to
-  // "Brontë". (Listing only the plain spelling stopped Alexa recognising
-  // "where is bronte" at all.) IDs are always plain.
+  // also gets its plain spelling as a synonym, so Alexa resolves "chloe" to
+  // "Chloë". (Listing only the plain spelling stopped Alexa recognising
+  // "where is chloe" at all.) IDs are always plain.
   languageModel.types.forEach((type) =>
     type.values.forEach((value) => {
       const forms = [value.name.value, ...value.name.synonyms];

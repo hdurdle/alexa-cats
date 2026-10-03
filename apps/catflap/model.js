@@ -44,7 +44,7 @@ function locatePet(pet, config) {
 
 // Only cats listed in catdobs, and not retired with a dod, are reported.
 // Names are matched ignoring accents and case, and the config spelling is
-// used from then on, so "Bronte" in SureFlap and "Brontë" in config agree.
+// used from then on, so "Chloe" in SureFlap and "Chloë" in config agree.
 function locatePets(pets, config) {
   return pets
     .map((pet) => locatePet(pet, config))

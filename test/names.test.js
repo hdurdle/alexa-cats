@@ -9,31 +9,31 @@ const {
 } = require("../apps/catflap/names");
 
 test("normalizeName drops accents, case and punctuation", () => {
-  assert.equal(normalizeName("Brontë"), "bronte");
+  assert.equal(normalizeName("Chloë"), "chloe");
   assert.equal(normalizeName("Zoë-Anne"), "zoe anne");
   assert.equal(normalizeName("  Mr. Tibbs "), "mr tibbs");
 });
 
 test("editDistance", () => {
-  assert.equal(editDistance("bronte", "bronte"), 0);
-  assert.equal(editDistance("bronte", "bronty"), 1);
-  assert.equal(editDistance("bronte", "brontay"), 2);
+  assert.equal(editDistance("chloe", "chloe"), 0);
+  assert.equal(editDistance("chloe", "chloy"), 1);
+  assert.equal(editDistance("chloe", "chlowy"), 2);
 });
 
 const cats = [
-  { name: "Brontë" },
+  { name: "Chloë" },
   { name: "Garfield", synonyms: ["Garfy"] },
   { name: "Tom" },
   { name: "Tim" },
 ];
 
 test("exact matches ignore accents and case", () => {
-  assert.equal(matchName("BRONTE", cats), "Brontë");
+  assert.equal(matchName("CHLOE", cats), "Chloë");
   assert.equal(matchName("garfy", cats), "Garfield");
 });
 
 test("near misses match a single close cat", () => {
-  assert.equal(matchName("brontay", cats), "Brontë");
+  assert.equal(matchName("chloey", cats), "Chloë");
   assert.equal(matchName("garfeld", cats), "Garfield");
 });
 
@@ -54,6 +54,6 @@ test("a tie between two cats doesn't guess", () => {
 });
 
 test("stripAccents keeps case and spacing", () => {
-  assert.equal(stripAccents("Brontë"), "Bronte");
+  assert.equal(stripAccents("Chloë"), "Chloe");
   assert.equal(stripAccents("Zoë-Anne"), "Zoe-Anne");
 });

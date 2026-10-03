@@ -164,7 +164,7 @@ function createApp({ config, client, logger = createLogger(config) }) {
     { value: "out", synonyms: ["outside", "outdoors"] },
   ]);
   // Cat names extend Amazon's built-in first-name type rather than a custom
-  // type: Alexa refused to put some real names (e.g. "Brontë") into a custom
+  // type: Alexa refused to put some real names (e.g. "Chloë") into a custom
   // slot, but fills the built-in one, which is trained on first names.
   alexaApp.customSlot(
     CAT_NAME_TYPE,
@@ -236,7 +236,11 @@ function createApp({ config, client, logger = createLogger(config) }) {
 
       const catName = getMatchedCat(req);
       const catDetail = catdobs.find((x) => sameName(x.name, catName || ""));
-      const speech = catDetail ? getAgeSpeechForCat(catDetail) : UNKNOWN_CAT;
+      let speech;
+      if (!catDetail) speech = UNKNOWN_CAT;
+      else if (!catDetail.dob) {
+        speech = "I don't know how old " + catDetail.name + " is.";
+      } else speech = getAgeSpeechForCat(catDetail);
 
       logger.info(speech);
       res.say(speech);

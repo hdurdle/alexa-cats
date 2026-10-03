@@ -1,0 +1,15 @@
+# Image for the setup wizard and the ASK CLI, so nothing else needs
+# installing. Used by the "setup" service in docker-compose.yml.
+FROM node:24-alpine
+
+RUN npm install -g ask-cli@2 && npm cache clean --force
+
+WORKDIR /app
+COPY package*.json ./
+COPY stubs ./stubs
+RUN npm ci --omit=dev && npm cache clean --force
+COPY . .
+
+# config.json and .env are written to the folder mounted here
+ENV OUTPUT_DIR=/work
+ENTRYPOINT ["node"]

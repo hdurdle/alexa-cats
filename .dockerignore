@@ -7,5 +7,6 @@
 **/*.md
 .env
 docker-compose*.yml
-scripts
 test
+.ask
+plans
