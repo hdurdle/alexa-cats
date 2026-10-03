@@ -22,26 +22,33 @@ function buildModel(config) {
     }),
   );
 
-  // Dialog.ConfirmIntent (used before locking cats out) needs the intent to
-  // be in the dialog model; the skill handles confirmation itself
+  // Dialog directives (ConfirmIntent before locking cats out, ElicitSlot when
+  // Alexa didn't catch a cat's name) need the intent in the dialog model. The
+  // skill drives the dialog itself, so nothing is required here.
+  const dialogIntents = languageModel.intents.filter((intent) =>
+    (intent.slots || []).some(
+      (slot) => slot.name === "catname" || slot.name === "lockmode",
+    ),
+  );
+  dialogIntents.forEach((intent) =>
+    intent.slots
+      .filter((slot) => slot.name === "catname")
+      .forEach((slot) => (slot.samples = ["{catname}"])),
+  );
   model.interactionModel.dialog = {
-    intents: [
-      {
-        name: "SetLockModeIntent",
-        delegationStrategy: "SKILL_RESPONSE",
+    intents: dialogIntents.map((intent) => ({
+      name: intent.name,
+      delegationStrategy: "SKILL_RESPONSE",
+      confirmationRequired: false,
+      prompts: {},
+      slots: intent.slots.map((slot) => ({
+        name: slot.name,
+        type: slot.type,
         confirmationRequired: false,
+        elicitationRequired: false,
         prompts: {},
-        slots: [
-          {
-            name: "lockmode",
-            type: "LockMode",
-            confirmationRequired: false,
-            elicitationRequired: false,
-            prompts: {},
-          },
-        ],
-      },
-    ],
+      })),
+    })),
     delegationStrategy: "SKILL_RESPONSE",
   };
 

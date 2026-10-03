@@ -13,6 +13,7 @@ const {
 
 const BATTERY_THRESHOLD = 5.2;
 const UNKNOWN_CAT = "Sorry, I don't recognise that cat.";
+const WHICH_CAT = "Which cat do you mean?";
 const HELP =
   "You can ask where the cats are, who is outside, who has been out the " +
   "longest, who is locked in, or how the batteries are. You can also lock " +
@@ -209,7 +210,7 @@ function createApp({ config, client, logger = createLogger(config) }) {
       },
       utterances: ["how old is {catname}", "how old {catname} is"],
     },
-    function (req, res) {
+    requireCat(function (req, res) {
       logger.info("GetAgeOfCatIntent");
 
       const catName = getMatchedCat(req);
@@ -218,7 +219,7 @@ function createApp({ config, client, logger = createLogger(config) }) {
 
       logger.info(speech);
       res.say(speech);
-    },
+    }),
   ); // GetAgeOfCatIntent
 
   alexaApp.intent(
@@ -270,7 +271,7 @@ function createApp({ config, client, logger = createLogger(config) }) {
         "where {catname} is",
       ],
     },
-    function (req, res) {
+    requireCat(function (req, res) {
       logger.info("GetLocationOfCatIntent");
 
       const cat = findCat(req);
@@ -278,7 +279,7 @@ function createApp({ config, client, logger = createLogger(config) }) {
 
       logger.info(speech);
       res.say(speech);
-    },
+    }),
   ); //GetLocationOfCatIntent
 
   // who has been somewhere the longest (earliest since) or shortest
@@ -384,7 +385,7 @@ function createApp({ config, client, logger = createLogger(config) }) {
         "how long has {catname} been {inout}",
       ],
     },
-    function (req, res) {
+    requireCat(function (req, res) {
       logger.info("GetCatInLocationDurationIntent");
 
       const cat = findCat(req);
@@ -392,7 +393,7 @@ function createApp({ config, client, logger = createLogger(config) }) {
 
       logger.info(speech);
       res.say(speech);
-    },
+    }),
   ); // GetCatInLocationDurationIntent
 
   alexaApp.intent(
@@ -404,7 +405,7 @@ function createApp({ config, client, logger = createLogger(config) }) {
       },
       utterances: ["{catname} is {inout}"],
     },
-    async function (req, res) {
+    requireCat(async function (req, res) {
       logger.info("SetLocationOfCatIntent");
 
       const cat = findCat(req);
@@ -421,7 +422,7 @@ function createApp({ config, client, logger = createLogger(config) }) {
 
       logger.info(speech);
       res.say(speech);
-    },
+    }),
   ); // SetLocationOfCatIntent
 
   alexaApp.intent(
@@ -433,7 +434,7 @@ function createApp({ config, client, logger = createLogger(config) }) {
       },
       utterances: ["to keep {catname} {inout}", "to let {catname} {inout}"],
     },
-    async function (req, res) {
+    requireCat(async function (req, res) {
       logger.info("SetCatPermissionIntent");
 
       const cat = findCat(req);
@@ -478,7 +479,7 @@ function createApp({ config, client, logger = createLogger(config) }) {
 
       logger.info(speech);
       res.say(speech);
-    },
+    }),
   ); // SetCatPermissionIntent
 
   alexaApp.intent(
@@ -634,11 +635,36 @@ function createApp({ config, client, logger = createLogger(config) }) {
     return mode ? mode.locking : null;
   }
 
+  // Wraps a handler that needs a cat: if Alexa didn't catch a name, ask
+  // "Which cat?" and wait for the answer instead of guessing.
+  function requireCat(handler) {
+    return function (req, res) {
+      const slot = req.slots["catname"];
+      if (!slot || !slot.value) {
+        logger.info("No cat name; asking which cat");
+        res
+          .say(WHICH_CAT)
+          .reprompt(WHICH_CAT)
+          .directive({
+            type: "Dialog.ElicitSlot",
+            slotToElicit: "catname",
+            updatedIntent: req.data.request.intent,
+          })
+          .shouldEndSession(false);
+        return;
+      }
+      return handler(req, res);
+    };
+  }
+
   // the located cat named in the catname slot, or null
   function findCat(req) {
     const catName = getMatchedCat(req);
     const cat = req.ctx.cats.find((x) => x.name === catName) || null;
-    if (!cat) logger.info("Couldn't find cat: " + catName);
+    if (!cat) {
+      const heard = req.slots["catname"] && req.slots["catname"].value;
+      logger.info(`Couldn't find cat: heard "${heard}", matched "${catName}"`);
+    }
     return cat;
   }
 

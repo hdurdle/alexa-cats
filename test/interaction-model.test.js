@@ -49,7 +49,17 @@ test("every intent the skill handles is in the model", () => {
   ]) {
     assert.ok(names.includes(name), name);
   }
-  assert.equal(model.dialog.intents[0].name, "SetLockModeIntent");
+  const dialogNames = model.dialog.intents.map((x) => x.name);
+  assert.ok(dialogNames.includes("SetLockModeIntent"));
+  assert.ok(dialogNames.includes("GetLocationOfCatIntent"));
+});
+
+test("cat name slots can be elicited", () => {
+  const model = buildModel(fixture("config.json")).interactionModel;
+  const intent = model.languageModel.intents.find(
+    (x) => x.name === "GetLocationOfCatIntent",
+  );
+  assert.deepEqual(intent.slots[0].samples, ["{catname}"]);
 });
 
 test("custom slot types used by intents are all defined", () => {

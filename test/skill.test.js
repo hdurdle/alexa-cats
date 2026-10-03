@@ -392,3 +392,30 @@ test("a failed lock write is reported", async () => {
     "Okay, the cat flaps are unlocked. But I couldn't update Back Door.",
   );
 });
+
+// Alexa sends the slot with no value when it didn't catch a name
+const noCatName = { name: "catname", confirmationStatus: "NONE" };
+
+for (const intent of [
+  "GetLocationOfCatIntent",
+  "GetAgeOfCatIntent",
+  "GetCatInLocationDurationIntent",
+  "SetLocationOfCatIntent",
+  "SetCatPermissionIntent",
+]) {
+  test(intent + " asks which cat when no name was heard", async () => {
+    const { response, speech, client } = await ask(intent, [noCatName]);
+    assert.equal(speech, "Which cat do you mean?");
+    assert.equal(response.response.shouldEndSession, false);
+    assert.deepEqual(response.response.directives[0], {
+      type: "Dialog.ElicitSlot",
+      slotToElicit: "catname",
+      updatedIntent: {
+        name: intent,
+        confirmationStatus: "NONE",
+        slots: { catname: noCatName },
+      },
+    });
+    assert.deepEqual(client.calls, []);
+  });
+}

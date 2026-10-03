@@ -41,7 +41,9 @@
             {
               "name": "catname",
               "type": "PetName",
-              "samples": []
+              "samples": [
+                "{catname}"
+              ]
             }
           ]
         },
@@ -71,7 +73,9 @@
             {
               "name": "catname",
               "type": "PetName",
-              "samples": []
+              "samples": [
+                "{catname}"
+              ]
             }
           ]
         },
@@ -151,7 +155,9 @@
             {
               "name": "catname",
               "type": "PetName",
-              "samples": []
+              "samples": [
+                "{catname}"
+              ]
             },
             {
               "name": "inout",
@@ -169,7 +175,9 @@
             {
               "name": "catname",
               "type": "PetName",
-              "samples": []
+              "samples": [
+                "{catname}"
+              ]
             },
             {
               "name": "inout",
@@ -188,7 +196,9 @@
             {
               "name": "catname",
               "type": "PetName",
-              "samples": []
+              "samples": [
+                "{catname}"
+              ]
             },
             {
               "name": "inout",
@@ -348,6 +358,102 @@
     },
     "dialog": {
       "intents": [
+        {
+          "name": "GetAgeOfCatIntent",
+          "delegationStrategy": "SKILL_RESPONSE",
+          "confirmationRequired": false,
+          "prompts": {},
+          "slots": [
+            {
+              "name": "catname",
+              "type": "PetName",
+              "confirmationRequired": false,
+              "elicitationRequired": false,
+              "prompts": {}
+            }
+          ]
+        },
+        {
+          "name": "GetLocationOfCatIntent",
+          "delegationStrategy": "SKILL_RESPONSE",
+          "confirmationRequired": false,
+          "prompts": {},
+          "slots": [
+            {
+              "name": "catname",
+              "type": "PetName",
+              "confirmationRequired": false,
+              "elicitationRequired": false,
+              "prompts": {}
+            }
+          ]
+        },
+        {
+          "name": "GetCatInLocationDurationIntent",
+          "delegationStrategy": "SKILL_RESPONSE",
+          "confirmationRequired": false,
+          "prompts": {},
+          "slots": [
+            {
+              "name": "catname",
+              "type": "PetName",
+              "confirmationRequired": false,
+              "elicitationRequired": false,
+              "prompts": {}
+            },
+            {
+              "name": "inout",
+              "type": "InOut",
+              "confirmationRequired": false,
+              "elicitationRequired": false,
+              "prompts": {}
+            }
+          ]
+        },
+        {
+          "name": "SetLocationOfCatIntent",
+          "delegationStrategy": "SKILL_RESPONSE",
+          "confirmationRequired": false,
+          "prompts": {},
+          "slots": [
+            {
+              "name": "catname",
+              "type": "PetName",
+              "confirmationRequired": false,
+              "elicitationRequired": false,
+              "prompts": {}
+            },
+            {
+              "name": "inout",
+              "type": "InOut",
+              "confirmationRequired": false,
+              "elicitationRequired": false,
+              "prompts": {}
+            }
+          ]
+        },
+        {
+          "name": "SetCatPermissionIntent",
+          "delegationStrategy": "SKILL_RESPONSE",
+          "confirmationRequired": false,
+          "prompts": {},
+          "slots": [
+            {
+              "name": "catname",
+              "type": "PetName",
+              "confirmationRequired": false,
+              "elicitationRequired": false,
+              "prompts": {}
+            },
+            {
+              "name": "inout",
+              "type": "InOut",
+              "confirmationRequired": false,
+              "elicitationRequired": false,
+              "prompts": {}
+            }
+          ]
+        },
         {
           "name": "SetLockModeIntent",
           "delegationStrategy": "SKILL_RESPONSE",
