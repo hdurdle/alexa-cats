@@ -130,3 +130,12 @@ test("custom slot types used by intents are all defined", () => {
     .filter((slot) => !slot.type.startsWith("AMAZON."))
     .forEach((slot) => assert.ok(defined.includes(slot.type), slot.type));
 });
+
+test("accented cat names get a plain synonym", () => {
+  const config = fixture("config.json");
+  config.catdobs.push({ name: "Brontë", dob: "2021-04-01" });
+  const petName = buildModel(config)
+    .interactionModel.languageModel.types.find((x) => x.name === "PetName")
+    .values.find((x) => x.name.value === "Brontë");
+  assert.deepEqual(petName.name.synonyms, ["bronte"]);
+});

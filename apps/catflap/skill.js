@@ -4,6 +4,7 @@ const alexa = require("alexa-app");
 const winston = require("winston");
 
 const model = require("./model");
+const { normalizeName, sameName, matchName } = require("./names");
 const {
   formatCatList,
   describeGroups,
@@ -86,6 +87,7 @@ function bySince(a, b) {
 function createApp({ config, client, logger = createLogger(config) }) {
   const flaps = config.flaps;
   const catdobs = config.catdobs;
+  const activeCats = catdobs.filter((x) => !Object.hasOwn(x, "dod"));
   const insideLocations = model.getInsideLocations(flaps);
   const allInsideLocations = [...new Set(flaps.map((x) => x.in))];
 
@@ -155,11 +157,21 @@ function createApp({ config, client, logger = createLogger(config) }) {
     { value: "in", synonyms: ["inside", "indoors", "home", "here"] },
     { value: "out", synonyms: ["outside", "outdoors"] },
   ]);
+  // the accent-free spelling is added as a synonym, so Alexa resolves
+  // "bronte" to "Brontë"
   alexaApp.customSlot(
     "PetName",
-    catdobs
-      .filter((x) => !Object.hasOwn(x, "dod"))
-      .map((x) => ({ value: x.name, synonyms: x.synonyms || [] })),
+    activeCats.map((x) => {
+      const plain = normalizeName(x.name);
+      const synonyms = [...(x.synonyms || [])];
+      if (
+        plain !== x.name.toLowerCase() &&
+        !synonyms.some((y) => sameName(y, plain))
+      ) {
+        synonyms.push(plain);
+      }
+      return { value: x.name, synonyms };
+    }),
   );
   alexaApp.customSlot("PetLocation", [
     ...new Set([
@@ -214,7 +226,7 @@ function createApp({ config, client, logger = createLogger(config) }) {
       logger.info("GetAgeOfCatIntent");
 
       const catName = getMatchedCat(req);
-      const catDetail = catdobs.find((x) => x.name === catName);
+      const catDetail = catdobs.find((x) => sameName(x.name, catName || ""));
       const speech = catDetail ? getAgeSpeechForCat(catDetail) : UNKNOWN_CAT;
 
       logger.info(speech);
@@ -660,7 +672,8 @@ function createApp({ config, client, logger = createLogger(config) }) {
   // the located cat named in the catname slot, or null
   function findCat(req) {
     const catName = getMatchedCat(req);
-    const cat = req.ctx.cats.find((x) => x.name === catName) || null;
+    const cat =
+      (catName && req.ctx.cats.find((x) => sameName(x.name, catName))) || null;
     if (!cat) {
       const heard = req.slots["catname"] && req.slots["catname"].value;
       logger.info(`Couldn't find cat: heard "${heard}", matched "${catName}"`);
@@ -680,16 +693,18 @@ function createApp({ config, client, logger = createLogger(config) }) {
     );
   }
 
-  // the cat name from the catname slot, or null
+  // The configured name of the cat in the catname slot, or null. Uses
+  // Alexa's entity resolution when it matched, otherwise the closest cat name
+  // or synonym to what Alexa heard (accents, case and small slips ignored).
   function getMatchedCat(request) {
     const slot = request.slots["catname"];
-    if (!slot) return null;
+    if (!slot || !slot.value) return null;
 
-    if (slot.resolutions.length === 0) return slot.value || null;
-    if (slot.resolutions[0].status === "ER_SUCCESS_MATCH") {
-      return slot.resolutions[0].values[0].name;
+    const resolution = slot.resolutions[0];
+    if (resolution && resolution.status === "ER_SUCCESS_MATCH") {
+      return resolution.values[0].name;
     }
-    return null;
+    return matchName(slot.value, activeCats);
   } // getMatchedCat(request)
 
   function resolvedValue(slot) {

@@ -1,5 +1,6 @@
 // Turns SureFlap API payloads plus config into the shapes the intents use.
 // Pure functions: no I/O, so they can be tested with fixture data.
+const { sameName } = require("./names");
 
 // locations that take "in the" in speech, e.g. "in the house"
 function getInsideLocations(flaps) {
@@ -41,14 +42,17 @@ function locatePet(pet, config) {
   };
 }
 
-// only cats listed in catdobs, and not retired with a dod, are reported
+// Only cats listed in catdobs, and not retired with a dod, are reported.
+// Names are matched ignoring accents and case, and the config spelling is
+// used from then on, so "Bronte" in SureFlap and "Brontë" in config agree.
 function locatePets(pets, config) {
   return pets
     .map((pet) => locatePet(pet, config))
-    .filter((cat) => {
-      if (!cat) return false;
-      const catDetail = config.catdobs.find((x) => x.name === cat.name);
-      return catDetail !== undefined && !Object.hasOwn(catDetail, "dod");
+    .filter(Boolean)
+    .flatMap((cat) => {
+      const catDetail = config.catdobs.find((x) => sameName(x.name, cat.name));
+      if (!catDetail || Object.hasOwn(catDetail, "dod")) return [];
+      return [{ ...cat, name: catDetail.name }];
     });
 }
 

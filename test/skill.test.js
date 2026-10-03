@@ -134,11 +134,11 @@ test("how long for an unknown cat", async () => {
   assert.equal(speech, "Sorry, I don't recognise that cat.");
 });
 
-test("entity resolution errors don't leak the slot object", async () => {
+test("entity resolution errors fall back to matching what was heard", async () => {
   const { speech } = await ask("GetLocationOfCatIntent", [
     h.unmatched("catname", "Garfield", "ER_ERROR_TIMEOUT"),
   ]);
-  assert.equal(speech, "Sorry, I don't recognise that cat.");
+  assert.match(speech, /^Garfield has been in the house/);
 });
 
 test("setting an unknown cat makes no API call", async () => {
@@ -419,3 +419,60 @@ for (const intent of [
     assert.deepEqual(client.calls, []);
   });
 }
+
+// forgiving names: accents, spelling differences and near misses
+
+function withBronte() {
+  // config spells it with an accent, SureFlap without
+  const config = h.fixture("config.json");
+  config.catdobs.push({ name: "Brontë", dob: "2021-04-01" });
+  const pets = [
+    ...h.fixture("pets.json"),
+    {
+      id: 505,
+      name: "Bronte",
+      tag: { id: 9005 },
+      position: {
+        device_id: 1001,
+        where: 2,
+        since: "2026-10-03T09:00:00+00:00",
+      },
+    },
+  ];
+  const client = h.stubClient({ getPets: async () => pets });
+  return createApp({ config, client, logger: h.silentLogger });
+}
+
+for (const heard of ["bronte", "Bronte", "BRONTË", "bronty", "brontay"]) {
+  test(`"${heard}" finds Brontë when Alexa doesn't resolve it`, async () => {
+    const response = await withBronte().request(
+      h.intentRequest("GetLocationOfCatIntent", [
+        h.unmatched("catname", heard),
+      ]),
+    );
+    assert.match(h.speechOf(response), /^Brontë has been outside/);
+  });
+}
+
+test("Brontë is found when Alexa resolves her by the config spelling", async () => {
+  const response = await withBronte().request(
+    h.intentRequest("GetLocationOfCatIntent", [
+      h.matched("catname", "bronte", "Brontë"),
+    ]),
+  );
+  assert.match(h.speechOf(response), /^Brontë has been outside/);
+});
+
+test("her age is found too", async () => {
+  const response = await withBronte().request(
+    h.intentRequest("GetAgeOfCatIntent", [h.unmatched("catname", "bronte")]),
+  );
+  assert.match(h.speechOf(response), /^Brontë is 5 years/);
+});
+
+test("a cat's synonym is matched when Alexa doesn't resolve it", async () => {
+  const { speech } = await ask("GetLocationOfCatIntent", [
+    h.unmatched("catname", "garfie"),
+  ]);
+  assert.match(speech, /^Garfield has been/);
+});
