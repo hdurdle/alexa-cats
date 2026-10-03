@@ -296,6 +296,9 @@ function createApp({ config, client, logger = createLogger(config) }) {
         "is {catname} in",
         "has {catname} gone out",
         "has {catname} come in",
+        // only a name, e.g. "ask cat flap Garfield". Alexa stopped recognising
+        // some names in this intent when this was removed
+        "{catname}",
       ],
     },
     requireCat(function (req, res) {
