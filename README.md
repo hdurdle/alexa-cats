@@ -9,6 +9,10 @@ A self-hosted Alexa skill that tells you where your cats are, using a
 
 [![Alexa Cat Flap Demo](https://img.youtube.com/vi/2CwArWuvpXA/0.jpg)](https://www.youtube.com/watch?v=2CwArWuvpXA)
 
+**Not technical?** [DEPLOY.md](DEPLOY.md) walks through setting it up on a
+Windows PC or Mac step by step, with a guided setup that does the
+configuration for you. The rest of this README assumes you know Docker.
+
 ## What you can ask
 
 Start with "Alexa, ask cat flap…" or open the skill with "Alexa, open cat flap".
@@ -57,6 +61,19 @@ cp apps/catflap/config-dist.json config.json
 
 Edit `config.json`. It holds your SureFlap password, so keep it private (it is
 git-ignored).
+
+Or let the setup wizard write it: it signs in to SureFlap, finds your
+household, pets (with dates of birth) and flaps, and asks which pets to include
+and what to call each flap's room. It runs in a tools container, so it needs
+nothing but Docker:
+
+```sh
+docker compose run --rm setup scripts/setup.js            # first time
+docker compose run --rm setup scripts/setup.js --refresh  # pick up new pets or flaps
+```
+
+It also asks for ngrok details for the optional tunnel (below); add
+`--no-tunnel` to skip that.
 
 | Key             | Purpose                                                                     |
 | --------------- | --------------------------------------------------------------------------- |
@@ -142,6 +159,15 @@ networks:
     external: true
 ```
 
+No reverse proxy? [docker-compose.tunnel.yml](docker-compose.tunnel.yml) adds
+an [ngrok](https://ngrok.com/) container that gives the skill a public HTTPS
+address on a free static ngrok domain, reading `NGROK_AUTHTOKEN` and
+`NGROK_DOMAIN` from `.env`:
+
+```sh
+docker compose -f docker-compose.yml -f docker-compose.tunnel.yml up -d --build
+```
+
 Without Docker, use Node.js 22 or later: `npm ci --omit=dev && npm start`.
 
 ### 3. Create the Alexa skill
@@ -161,6 +187,25 @@ Without Docker, use Node.js 22 or later: `npm ci --omit=dev && npm start`.
 4. Put the skill ID in `applicationId` in `config.json`.
 
 Run `npm run model` again whenever you add a cat or a place.
+
+Or script all of it with the [ASK CLI](https://developer.amazon.com/en-US/docs/alexa/smapi/quick-start-alexa-skills-kit-command-line-interface.html),
+run from the tools container (it signs you in to Amazon the first time and
+keeps the sign-in in the git-ignored `.ask/` folder):
+
+```sh
+docker compose run --rm setup scripts/alexa-skill.js            # create or update
+docker compose run --rm setup scripts/alexa-skill.js --dry-run  # show the calls
+```
+
+It creates the skill if `config.json` has no `applicationId` (otherwise it
+updates only the endpoint), uploads the model built from your config, waits for
+the build, enables it for testing on your account and saves the skill ID. The
+endpoint comes from `NGROK_DOMAIN` in `.env`, or set `SKILL_ENDPOINT` (for
+example `https://alexa.example.com`) to use your own host.
+
+`setup.cmd`/`setup.command` and `update.cmd`/`update.command` run the wizard,
+start the stack with the tunnel and create or update the skill in one go; they
+are what DEPLOY.md uses.
 
 ## Development
 

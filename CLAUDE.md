@@ -35,6 +35,24 @@ This repo is public on GitHub.
   validates.
 - `apps/catflap/interaction-model.js` and `scripts/build-model.js`: generate the
   interaction model from the code.
+- `apps/catflap/defaults.js`: pure functions that build a config from SureFlap's
+  `GET /api/me/start` (households, devices, pets). Flaps are `product_id` 3
+  (Pet Door Connect) and 6 (Cat Flap Connect); 1 is the hub. Pet
+  `date_of_birth` is ISO with a time and offset, and may be missing.
+- `scripts/setup.js`: interactive setup wizard (sign in, household, pets,
+  rooms, nicknames, ngrok details). Writes `config.json` (0644, the skill
+  container must read it) and `.env` (0600) to `OUTPUT_DIR`.
+- `scripts/alexa-skill.js`: creates or updates the Alexa skill with the ASK
+  CLI. Creating sends a minimal manifest; updating fetches the manifest and
+  changes only the endpoint, so other locales survive.
+- `Dockerfile.tools` and the `setup` compose service (profile `tools`): Node +
+  ASK CLI for the two scripts, so non-technical users need only Docker. ASK
+  sign-in lives in the git-ignored `.ask/` folder.
+- `docker-compose.tunnel.yml`: optional ngrok container for a public HTTPS
+  address (free static `*.ngrok-free.app` domain, wildcard certificate).
+- `setup.cmd`/`setup.command`, `update.cmd`/`update.command`: double-click
+  launchers used by `DEPLOY.md`. `.cmd` files must keep CRLF line endings
+  (`.gitattributes`) and `.command` files their executable bit.
 - `stubs/alexa-verifier-middleware`: replaces alexa-app's bundled verifier
   (unused, and it pulls in vulnerable dependencies) through npm `overrides`.
 
@@ -75,6 +93,12 @@ The Docker image builds from the checked-out code. On the host, the repo is
 cloned, `config.json` sits in the repo root, and host-specific Traefik settings
 live in the git-ignored `docker-compose.override.yml`. Update with
 `git pull && docker compose up -d --build`.
+
+`DEPLOY.md` is the step-by-step guide for non-technical users (Docker
+Desktop on Windows or Mac, ngrok tunnel, launchers). Keep it free of jargon,
+and keep the README for technical readers. To test the wizard without a real
+account, run it with a preloaded fake `sureflap` module and answer prompts
+from a script (piped input to readline loses lines).
 
 ## Known limitations
 
