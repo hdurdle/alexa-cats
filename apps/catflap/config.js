@@ -2,7 +2,16 @@
 const fs = require("fs");
 const path = require("path");
 
-const DEFAULT_PATH = path.join(__dirname, "config.json");
+// The container mounts config.json next to this file; when running from a
+// checkout, the setup wizard writes it to the repo root instead.
+const DEFAULT_PATHS = [
+  path.join(__dirname, "config.json"),
+  path.join(__dirname, "..", "..", "config.json"),
+];
+
+function defaultConfigPath() {
+  return DEFAULT_PATHS.find((x) => fs.existsSync(x)) || DEFAULT_PATHS[0];
+}
 
 // environment variable -> config key
 const ENV_OVERRIDES = {
@@ -68,11 +77,11 @@ function validateConfig(config) {
 }
 
 function loadConfig(
-  file = process.env.CONFIG_PATH || DEFAULT_PATH,
+  file = process.env.CONFIG_PATH || defaultConfigPath(),
   env = process.env,
 ) {
   const config = JSON.parse(fs.readFileSync(file, "utf8"));
   return validateConfig(applyEnv(config, env));
 }
 
-module.exports = { loadConfig, applyEnv, validateConfig };
+module.exports = { loadConfig, defaultConfigPath, applyEnv, validateConfig };

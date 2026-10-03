@@ -169,6 +169,9 @@ function signedIn() {
 
 async function main() {
   const dryRun = process.argv.includes("--dry-run");
+  if (!fs.existsSync(CONFIG_FILE)) {
+    throw new Error("No config.json yet. Run the setup step first.");
+  }
   const config = JSON.parse(fs.readFileSync(CONFIG_FILE, "utf8"));
   const env = readEnv(ENV_FILE);
   const endpointBase =
