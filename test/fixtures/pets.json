@@ -1,0 +1,26 @@
+[
+  {
+    "id": 501,
+    "name": "Garfield",
+    "tag": { "id": 9001 },
+    "position": { "device_id": 1001, "where": 1, "since": "2026-10-03T08:00:00+00:00" }
+  },
+  {
+    "id": 502,
+    "name": "Felix",
+    "tag": { "id": 9002 },
+    "position": { "device_id": 1002, "where": 2, "since": "2026-10-03T06:00:00+00:00" }
+  },
+  {
+    "id": 503,
+    "name": "Tom",
+    "tag": { "id": 9003 },
+    "position": { "where": 1, "since": "2024-12-01T00:00:00+00:00" }
+  },
+  {
+    "id": 504,
+    "name": "Stray",
+    "tag": { "id": 9004 },
+    "position": { "device_id": 1001, "where": 2, "since": "2026-10-01T00:00:00+00:00" }
+  }
+]

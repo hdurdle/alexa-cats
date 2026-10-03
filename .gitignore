@@ -71,3 +71,4 @@ notes.txt
 
 # local compose overrides
 docker-compose.override.yml
+!test/fixtures/config.json

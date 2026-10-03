@@ -1,0 +1,19 @@
+[
+  { "id": 1000, "product_id": 1, "name": "Hub", "status": { "online": true } },
+  {
+    "id": 1001,
+    "product_id": 6,
+    "name": "Back Door",
+    "status": { "battery": 5.95, "online": true },
+    "control": { "locking": 0 },
+    "tags": [{ "id": 9001, "profile": 2 }, { "id": 9002, "profile": 3 }]
+  },
+  {
+    "id": 1002,
+    "product_id": 6,
+    "name": "Conservatory",
+    "status": { "battery": 5.1, "online": true },
+    "control": { "locking": 1 },
+    "tags": [{ "id": 9001, "profile": 2 }]
+  }
+]
