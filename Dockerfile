@@ -1,4 +1,4 @@
-FROM node:24-alpine
+FROM node:26-alpine
 
 LABEL org.opencontainers.image.title="alexa-cats" \
   org.opencontainers.image.description="Alexa skill that says where your cats are, using SureFlap data" \
