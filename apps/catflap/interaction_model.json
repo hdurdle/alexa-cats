@@ -86,8 +86,7 @@
             "is {catname} out",
             "is {catname} in",
             "has {catname} gone out",
-            "has {catname} come in",
-            "{catname}"
+            "has {catname} come in"
           ],
           "slots": [
             {
