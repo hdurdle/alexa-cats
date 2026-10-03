@@ -1,390 +1,370 @@
 {
-    "interactionModel": {
+  "interactionModel": {
     "languageModel": {
-        "invocationName": "cat flap",
-            "intents": [
-            {
-                "name": "AMAZON.CancelIntent",
-                "samples": []
-            },
-            {
-                "name": "AMAZON.HelpIntent",
-                "samples": []
-            },
-            {
-                "name": "AMAZON.StopIntent",
-                "samples": []
-            },
-            {
-                "name": "AMAZON.NavigateHomeIntent",
-                "samples": []
-            },
-            {
-                "name": "GetAgeOfCatIntent",
-                "slots": [
-                    {
-                        "name": "catname",
-                        "type": "PetName"
-                    }
-                ],
-                "samples": [
-                    "how old {catname} is",
-                    "how old is {catname}"
-                ]
-            },
-            {
-                "name": "GetLocationOfCatIntent",
-                "slots": [
-                    {
-                        "name": "catname",
-                        "type": "PetName",
-                        "samples": [
-                            "{catname}"
-                        ]
-                    }
-                ],
-                "samples": [
-                    "where {catname} is",
-                    "where's {catname}",
-                    "Is {catname} outside",
-                    "is {catname} at home",
-                    "Is {catname} out",
-                    "Is {catname} in",
-                    "where is {catname}"
-                ]
-            },
-            {
-                "name": "GetCatsInLocationIntent",
-                "slots": [
-                    {
-                        "name": "locationname",
-                        "type": "PetLocation",
-                        "samples": [
-                            "{locationname}"
-                        ]
-                    },
-                    {
-                        "name": "inout",
-                        "type": "InOut"
-                    }
-                ],
-                "samples": [
-                    "who is {inout}",
-                    "who is in the {locationname}",
-                    "who is at {inout}",
-                    "who is {locationname}"
-                ]
-            },
-            {
-                "name": "SetLocationOfCatIntent",
-                "slots": [
-                    {
-                        "name": "catname",
-                        "type": "PetName"
-                    },
-                    {
-                        "name": "inout",
-                        "type": "InOut"
-                    }
-                ],
-                "samples": [
-                    "{catname} is {inout}"
-                ]
-            },
-            {
-                "name": "GetCatInLocationDurationIntent",
-                "slots": [
-                    {
-                        "name": "catname",
-                        "type": "PetName"
-                    },
-                    {
-                        "name": "inout",
-                        "type": "InOut"
-                    }
-                ],
-                "samples": [
-                    "how long has {catname} been {inout}",
-                    "when did {catname} go {inout}",
-                    "when did {catname} come {inout}"
-                ]
-            },
-            {
-                "name": "GetLongestDurationIntent",
-                "slots": [
-                    {
-                        "name": "inout",
-                        "type": "InOut"
-                    }
-                ],
-                "samples": [
-                    "who has been {inout} the longest"
-                ]
-            },
-            {
-                "name": "GetDeviceStatusIntent",
-                "slots": [],
-                "samples": [
-                    "about battery",
-                    "for device status",
-                    "for status"
-                ]
-            }
-        ],
-            "types": [
-            {
-                "name": "InOut",
-                "values": [
-                    {
-                        "id": "OUT",
-                        "name": {
-                            "value": "out",
-                            "synonyms": [
-                                "outside"
-                            ]
-                        }
-                    },
-                    {
-                        "id": "IN",
-                        "name": {
-                            "value": "in",
-                            "synonyms": [
-                                "inside",
-                                "here",
-                                "home"
-                            ]
-                        }
-                    }
-                ]
-            },
-            {
-                "name": "PetName",
-                "values": [
-                    {
-                        "id": "SPARKLE",
-                        "name": {
-                            "value": "Sparkle",
-                            "synonyms": [
-                                "Old Lady",
-                                "Sparks"
-                            ]
-                        }
-                    },
-                    {
-                        "id": "TORMUND",
-                        "name": {
-                            "value": "Tormund",
-                            "synonyms": [
-                                "Tormie"
-                            ]
-                        }
-                    },
-                    {
-                        "id": "KYLO",
-                        "name": {
-                            "value": "Kylo"
-                        }
-                    },
-                    {
-                        "id": "ANGELICA",
-                        "name": {
-                            "value": "Angelica",
-                            "synonyms": [
-                                "Jelly Bobs"
-                            ]
-                        }
-                    },
-                    {
-                        "id": "HAMILTON",
-                        "name": {
-                            "value": "Hamilton",
-                            "synonyms": [
-                                "Hamiltron",
-                                "Hammy"
-                            ]
-                        }
-                    },
-                    {
-                        "id": "CHARLIE",
-                        "name": {
-                            "value": "Charlie"
-                        }
-                    },
-                    {
-                        "id": "HARRI",
-                        "name": {
-                            "value": "Harri",
-                            "synonyms": [
-                                "Harry"
-                            ]
-                        }
-                    },
-                    {
-                        "id": "STORM",
-                        "name": {
-                            "value": "Storm"
-                        }
-                    },
-                    {
-                        "id": "PHOENIX",
-                        "name": {
-                            "value": "Phoenix",
-                            "synonyms": [
-                                "Stumpy"
-                            ]
-                        }
-                    },
-                    {
-                        "id": "ROGUE",
-                        "name": {
-                            "value": "Rogue",
-                            "synonyms": [
-                                "Piglet"
-                            ]
-                        }
-                    },
-                    {
-                        "id": "EZIO",
-                        "name": {
-                            "value": "Ezio",
-                            "synonyms": [
-                                "Big Dog"
-                            ]
-                        }
-                    },
-                    {
-                        "id": "LEIA",
-                        "name": {
-                            "value": "Leia",
-                            "synonyms": [
-                                "Lay Lay"
-                            ]
-                        }
-                    },
-                    {
-                        "id": "FREYJA",
-                        "name": {
-                            "value": "Freyja",
-                            "synonyms": [
-                                "Frey Frey"
-                            ]
-                        }
-                    },
-                    {
-                        "id": "LOKI",
-                        "name": {
-                            "value": "Loki",
-                            "synonyms": [
-                                "loci",
-                                "Gracca's Favourite"
-                            ]
-                        }
-                    }
-                ]
-            },
-            {
-                "name": "PetLocation",
-                "values": [
-                    {
-                        "id": "SHED",
-                        "name": {
-                            "value": "shed"
-                        }
-                    },
-                    {
-                        "id": "OUTSIDE",
-                        "name": {
-                            "value": "outside",
-                            "synonyms": [
-                                "out"
-                            ]
-                        }
-                    },
-                    {
-                        "id": "HOUSE",
-                        "name": {
-                            "value": "house",
-                            "synonyms": [
-                                "here"
-                            ]
-                        }
-                    },
-                    {
-                        "id": "CONSERVATORY",
-                        "name": {
-                            "value": "conservatory",
-                            "synonyms": [
-                                "sun room"
-                            ]
-                        }
-                    }
-                ]
-            }
-        ]
-    },
-    "dialog": {
-        "intents": [
-            {
-                "name": "GetLocationOfCatIntent",
-                "confirmationRequired": false,
-                "prompts": {},
-                "slots": [
-                    {
-                        "name": "catname",
-                        "type": "PetName",
-                        "confirmationRequired": false,
-                        "elicitationRequired": true,
-                        "prompts": {
-                            "elicitation": "Elicit.Slot.349963622712.12684119630"
-                        }
-                    }
-                ]
-            },
-            {
-                "name": "GetCatsInLocationIntent",
-                "confirmationRequired": false,
-                "prompts": {},
-                "slots": [
-                    {
-                        "name": "locationname",
-                        "type": "PetLocation",
-                        "confirmationRequired": false,
-                        "elicitationRequired": true,
-                        "prompts": {
-                            "elicitation": "Elicit.Slot.221012515258.386625259233"
-                        }
-                    },
-                    {
-                        "name": "inout",
-                        "type": "InOut",
-                        "confirmationRequired": false,
-                        "elicitationRequired": false,
-                        "prompts": {}
-                    }
-                ]
-            }
-        ],
-            "delegationStrategy": "SKILL_RESPONSE"
-    },
-    "prompts": [
+      "intents": [
         {
-            "id": "Elicit.Slot.349963622712.12684119630",
-            "variations": [
-                {
-                    "type": "PlainText",
-                    "value": "Which cat do you mean?"
-                }
-            ]
+          "name": "AMAZON.HelpIntent",
+          "samples": []
         },
         {
-            "id": "Elicit.Slot.221012515258.386625259233",
-            "variations": [
-                {
-                    "type": "PlainText",
-                    "value": "Which room do you mean?"
-                }
-            ]
+          "name": "AMAZON.FallbackIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.StopIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.CancelIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.NavigateHomeIntent",
+          "samples": []
+        },
+        {
+          "name": "GetCatsLocationIntent",
+          "samples": [
+            "where are the cats",
+            "where are the kitties",
+            "where the cats are",
+            "where everyone is"
+          ]
+        },
+        {
+          "name": "GetAgeOfCatIntent",
+          "samples": [
+            "how old is catname",
+            "how old catname is"
+          ],
+          "slots": [
+            {
+              "name": "catname",
+              "type": "PetName",
+              "samples": []
+            }
+          ]
+        },
+        {
+          "name": "GetDeviceStatusIntent",
+          "samples": [
+            "about battery",
+            "about batteries",
+            "is the battery okay",
+            "how are the batteries",
+            "for device status",
+            "for status"
+          ]
+        },
+        {
+          "name": "GetLocationOfCatIntent",
+          "samples": [
+            "where's catname",
+            "is catname outside",
+            "is catname at home",
+            "is catname out",
+            "is catname in",
+            "where is catname",
+            "where catname is"
+          ],
+          "slots": [
+            {
+              "name": "catname",
+              "type": "PetName",
+              "samples": []
+            }
+          ]
+        },
+        {
+          "name": "GetLongestDurationIntent",
+          "samples": [
+            "who has been inout the longest",
+            "who's been inout the longest",
+            "who has been in the locationname the longest",
+            "who's been in the locationname the longest"
+          ],
+          "slots": [
+            {
+              "name": "inout",
+              "type": "InOut",
+              "samples": []
+            },
+            {
+              "name": "locationname",
+              "type": "PetLocation",
+              "samples": []
+            }
+          ]
+        },
+        {
+          "name": "GetShortestDurationIntent",
+          "samples": [
+            "who has been inout the shortest",
+            "who's been inout the shortest",
+            "who has been inout for the shortest time",
+            "who has been in the locationname the shortest",
+            "who came inout last"
+          ],
+          "slots": [
+            {
+              "name": "inout",
+              "type": "InOut",
+              "samples": []
+            },
+            {
+              "name": "locationname",
+              "type": "PetLocation",
+              "samples": []
+            }
+          ]
+        },
+        {
+          "name": "GetCatsInLocationIntent",
+          "samples": [
+            "who is inout",
+            "who is in the locationname",
+            "who's in the locationname",
+            "who is at inout",
+            "who is locationname"
+          ],
+          "slots": [
+            {
+              "name": "locationname",
+              "type": "PetLocation",
+              "samples": []
+            },
+            {
+              "name": "inout",
+              "type": "InOut",
+              "samples": []
+            }
+          ]
+        },
+        {
+          "name": "GetCatInLocationDurationIntent",
+          "samples": [
+            "when did catname come inout",
+            "when did catname go inout",
+            "how long has catname been inout"
+          ],
+          "slots": [
+            {
+              "name": "catname",
+              "type": "PetName",
+              "samples": []
+            },
+            {
+              "name": "inout",
+              "type": "InOut",
+              "samples": []
+            }
+          ]
+        },
+        {
+          "name": "SetLocationOfCatIntent",
+          "samples": [
+            "catname is inout"
+          ],
+          "slots": [
+            {
+              "name": "catname",
+              "type": "PetName",
+              "samples": []
+            },
+            {
+              "name": "inout",
+              "type": "InOut",
+              "samples": []
+            }
+          ]
+        },
+        {
+          "name": "SetCatPermissionIntent",
+          "samples": [
+            "to keep catname inout",
+            "to let catname inout"
+          ],
+          "slots": [
+            {
+              "name": "catname",
+              "type": "PetName",
+              "samples": []
+            },
+            {
+              "name": "inout",
+              "type": "InOut",
+              "samples": []
+            }
+          ]
+        },
+        {
+          "name": "GetCatsPermissionIntent",
+          "samples": [
+            "who is locked in",
+            "who is kept in",
+            "which cats are locked in",
+            "which cats are allowed out",
+            "if the cats are allowed out"
+          ]
+        },
+        {
+          "name": "GetLockStatusIntent",
+          "samples": [
+            "is the cat flap locked",
+            "are the cat flaps locked",
+            "if the cat flap is locked",
+            "about the lock status",
+            "the lock status"
+          ]
+        },
+        {
+          "name": "SetLockModeIntent",
+          "samples": [
+            "to lockmode",
+            "to lockmode the cat flap",
+            "to lockmode the cat flaps",
+            "to set the cat flaps to lockmode"
+          ],
+          "slots": [
+            {
+              "name": "lockmode",
+              "type": "LockMode",
+              "samples": []
+            }
+          ]
         }
-    ]
-}
+      ],
+      "types": [
+        {
+          "name": "InOut",
+          "values": [
+            {
+              "id": "IN",
+              "name": {
+                "value": "in",
+                "synonyms": [
+                  "inside",
+                  "indoors",
+                  "home",
+                  "here"
+                ]
+              }
+            },
+            {
+              "id": "OUT",
+              "name": {
+                "value": "out",
+                "synonyms": [
+                  "outside",
+                  "outdoors"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PetName",
+          "values": [
+            {
+              "id": "GARFIELD",
+              "name": {
+                "value": "Garfield",
+                "synonyms": [
+                  "Garfy"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PetLocation",
+          "values": [
+            {
+              "id": "HOUSE",
+              "name": {
+                "value": "house"
+              }
+            },
+            {
+              "id": "OUTSIDE",
+              "name": {
+                "value": "outside"
+              }
+            }
+          ]
+        },
+        {
+          "name": "LockMode",
+          "values": [
+            {
+              "id": "UNLOCK",
+              "name": {
+                "value": "unlock",
+                "synonyms": [
+                  "unlocked",
+                  "open"
+                ]
+              }
+            },
+            {
+              "id": "KEEP_IN",
+              "name": {
+                "value": "keep in",
+                "synonyms": [
+                  "lock in",
+                  "keep pets in",
+                  "keep the cats in",
+                  "lock all cats in"
+                ]
+              }
+            },
+            {
+              "id": "KEEP_OUT",
+              "name": {
+                "value": "keep out",
+                "synonyms": [
+                  "lock out",
+                  "keep pets out",
+                  "keep the cats out",
+                  "lock all cats out"
+                ]
+              }
+            },
+            {
+              "id": "LOCK",
+              "name": {
+                "value": "lock",
+                "synonyms": [
+                  "lock both ways",
+                  "lock completely",
+                  "lock the cat flap both ways"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "invocationName": "cat flap"
+    },
+    "dialog": {
+      "intents": [
+        {
+          "name": "SetLockModeIntent",
+          "delegationStrategy": "SKILL_RESPONSE",
+          "confirmationRequired": false,
+          "prompts": {},
+          "slots": [
+            {
+              "name": "lockmode",
+              "type": "LockMode",
+              "confirmationRequired": false,
+              "elicitationRequired": false,
+              "prompts": {}
+            }
+          ]
+        }
+      ],
+      "delegationStrategy": "SKILL_RESPONSE"
+    }
+  }
 }

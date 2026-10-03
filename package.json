@@ -9,7 +9,9 @@
   },
   "scripts": {
     "start": "node server.js",
-    "test": "node --test test/*.test.js"
+    "test": "node --test test/*.test.js",
+    "model": "node scripts/build-model.js",
+    "model:example": "node scripts/build-model.js --example"
   },
   "repository": {
     "type": "git",

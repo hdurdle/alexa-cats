@@ -8,7 +8,7 @@
     { "id": 1002, "in": "conservatory", "out": "outside", "name": "conservatory", "icon": "fa-couch" }
   ],
   "catdobs": [
-    { "name": "Garfield", "dob": "2018-06-19" },
+    { "name": "Garfield", "dob": "2018-06-19", "synonyms": ["Garfy"] },
     { "name": "Felix", "dob": "2020-01-15" },
     { "name": "Tom", "dob": "2015-03-01", "dod": "2025-01-01" }
   ]

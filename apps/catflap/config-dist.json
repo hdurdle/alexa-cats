@@ -24,6 +24,7 @@
   "catdobs": [
     {
       "name": "Garfield",
+      "synonyms": ["Garfy"],
       "dob": "1978-06-19"
     }
   ]

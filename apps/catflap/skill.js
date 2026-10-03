@@ -125,10 +125,33 @@ function createApp({ config, client, logger = createLogger(config) }) {
     res.say("Bye.");
   });
 
+  // required in every interaction model
+  alexaApp.intent("AMAZON.NavigateHomeIntent", function (req, res) {
+    res.say("Bye.");
+  });
+
   alexaApp.sessionEnded(function () {
     logger.info("session ended");
   });
 
+  // Slot types for the interaction model (see interaction-model.js). Cat
+  // and room names come from config, so the public repo holds none of them.
+  alexaApp.customSlot("InOut", [
+    { value: "in", synonyms: ["inside", "indoors", "home", "here"] },
+    { value: "out", synonyms: ["outside", "outdoors"] },
+  ]);
+  alexaApp.customSlot(
+    "PetName",
+    catdobs
+      .filter((x) => !x.dod)
+      .map((x) => ({ value: x.name, synonyms: x.synonyms || [] }))
+  );
+  alexaApp.customSlot("PetLocation", [
+    ...new Set([
+      ...flaps.map((x) => x.in).filter((x) => x !== "inside"),
+      "outside",
+    ]),
+  ]);
   alexaApp.customSlot(
     "LockMode",
     LOCK_MODE_VALUES.map(({ value, synonyms }) => ({ value, synonyms }))

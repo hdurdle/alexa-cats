@@ -72,3 +72,4 @@ notes.txt
 # local compose overrides
 docker-compose.override.yml
 !test/fixtures/config.json
+interaction_model.local.json
