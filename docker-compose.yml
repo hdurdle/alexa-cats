@@ -10,8 +10,15 @@ services:
     container_name: alexa-cats
     restart: unless-stopped
     init: true
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
     expose:
       - 8080
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ./config.json:/app/apps/catflap/config.json:ro
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"

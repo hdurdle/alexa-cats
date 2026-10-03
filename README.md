@@ -1,111 +1,124 @@
 # alexa-cats
 
-A self-hosted Alexa Skill backend that tells you where your cats are, using data from a
+A self-hosted Alexa skill that tells you where your cats are, using a
 [Sure Petcare microchip pet door connect](https://www.surepetcare.com/en-gb/pet-doors/microchip-pet-door-connect)
-(SureFlap).
+(SureFlap). It can also lock and unlock the flaps and set curfews.
 
-> "Alexa, ask cat flap where Ezio is."
-> "Ezio has been outside for 3 hours."
+> "Alexa, ask cat flap where the cats are."
+> "Garfield is inside. Felix is outside."
 
 [![Alexa Cat Flap Demo](https://img.youtube.com/vi/2CwArWuvpXA/0.jpg)](https://www.youtube.com/watch?v=2CwArWuvpXA)
 
-## What it can do
+## What you can ask
 
-| Ask | Intent |
-| --- | --- |
-| "where's {cat}" / "is {cat} outside" | `GetLocationOfCatIntent` |
-| "who is in the {location}" / "who is out" | `GetCatsInLocationIntent` |
-| "how long has {cat} been out" | `GetCatInLocationDurationIntent` |
-| "who's been out the longest" | `GetLongestDurationIntent` |
-| "{cat} is inside" (sets the pet's position) | `SetLocationOfCatIntent` |
-| "to keep {cat} in" / "to let {cat} out" | `SetCatPermissionIntent` |
-| "how old is {cat}" | `GetAgeOfCatIntent` |
-| "how are the batteries" | `GetDeviceStatusIntent` |
+Start with "Alexa, ask cat flap…" or open the skill with "Alexa, open cat flap".
 
-Each request fetches current pet positions and device status from the SureFlap API, so answers
-are always live.
+| Ask                                            | Does                                                  |
+| ---------------------------------------------- | ----------------------------------------------------- |
+| where are the cats                             | says who is inside and who is outside                 |
+| where's Garfield / is Garfield out             | where one cat is, and for how long                    |
+| who is out / who is in the house               | who is in a place                                     |
+| who's been out the longest / the shortest      | the cat out (or in) longest or most recently          |
+| how long has Garfield been out                 | how long one cat has been where it is                 |
+| how old is Garfield                            | the cat's age, with birthday wishes on the day        |
+| Garfield is inside                             | corrects a cat's position in the SureFlap app         |
+| to keep Garfield in / to let Garfield out      | sets that cat's curfew on the curfew flaps            |
+| who is locked in                               | which cats are kept in and which are allowed out      |
+| to unlock / to keep in / to keep out / to lock | sets every flap's lock mode (asks first for out/lock) |
+| is the cat flap locked                         | each flap's lock mode                                 |
+| how are the batteries                          | names any flap with a low battery                     |
+
+Every request reads live data from the SureFlap API.
 
 ## How it works
 
 ```
-Alexa cloud ──HTTPS──▶ reverse proxy ──▶ server.js (alexa-app-server :8080)
-                                              │
-                                              └─ apps/catflap (alexa-app) ──▶ app.api.surehub.io
+Alexa cloud --HTTPS--> reverse proxy --> server.js (Express, port 8080)
+                                            | verifies the request came from Alexa
+                                            v
+                                        apps/catflap (alexa-app) --> app.api.surehub.io
 ```
 
-- [server.js](server.js) starts [alexa-app-server](https://github.com/alexa-js/alexa-app-server),
-  which loads every module under [apps/](apps/) and serves it at `/alexa/<app>`.
-- [apps/catflap/index.js](apps/catflap/index.js) is the skill itself.
-- [apps/catflap/interaction_model.json](apps/catflap/interaction_model.json) is the interaction
-  model to paste into the Alexa developer console. Edit the `PetName` and `PetLocation` slot
-  values to match your own cats and rooms.
+- [server.js](server.js): HTTP server. Verifies Alexa's request signature,
+  checks the skill ID, and hands the request to the skill.
+- [apps/catflap/skill.js](apps/catflap/skill.js): the intents.
+- [apps/catflap/sureflap.js](apps/catflap/sureflap.js): SureFlap API client.
+- [apps/catflap/interaction_model.json](apps/catflap/interaction_model.json): an
+  example interaction model. Build your own with `npm run model` (see below).
 
 ## Setup
 
 ### 1. Configure
 
 ```sh
-cp apps/catflap/config-dist.json apps/catflap/config.json
+git clone https://github.com/hdurdle/alexa-cats.git && cd alexa-cats
+cp apps/catflap/config-dist.json config.json
 ```
 
-Then edit `config.json` (it is git-ignored):
+Edit `config.json`. It holds your SureFlap password, so keep it private (it is
+git-ignored).
 
-| Key | Purpose |
-| --- | --- |
-| `token` | SureFlap API bearer token |
-| `household` | SureFlap household ID |
-| `applicationId` | Alexa skill ID (optional) |
-| `logLevel` | winston log level (overridden by `LOG_LEVEL` env var) |
-| `flaps` | Topology of your pet doors (see below) |
-| `catdobs` | `{ "name", "dob" }` for each cat. Only cats listed here are reported. Add `"dod"` to retire a cat. |
+| Key             | Purpose                                                                     |
+| --------------- | --------------------------------------------------------------------------- |
+| `email`         | SureFlap account email                                                      |
+| `password`      | SureFlap account password. The skill logs in and refreshes its token itself |
+| `token`         | Optional: a fixed SureFlap API token instead of email and password          |
+| `household`     | SureFlap household ID                                                       |
+| `applicationId` | Optional: your Alexa skill ID. Requests for any other skill are rejected    |
+| `logLevel`      | `error`, `warn`, `info` (default) or `debug`                                |
+| `flaps`         | Your pet doors (see below)                                                  |
+| `catdobs`       | Your cats (see below)                                                       |
 
-#### Flap topology
+These environment variables override the file, if you'd rather keep secrets
+out of it: `SUREFLAP_EMAIL`, `SUREFLAP_PASSWORD`, `SUREFLAP_TOKEN`,
+`SUREFLAP_HOUSEHOLD`, `ALEXA_APPLICATION_ID`, `LOG_LEVEL`.
 
-Each pet door connects two places. When a cat last went *in* through a flap they're in the
-`in` location, otherwise the `out` location.
+#### Flaps
+
+Each pet door connects two places. A cat that last went _in_ through a flap is
+in its `in` location, otherwise its `out` location.
 
 ```json
 { "id": 123456, "in": "conservatory", "out": "outside", "name": "conservatory" }
 ```
 
-Keep the `"id": 0` entry. SureFlap omits `device_id` when a pet's position is set manually in the
-app, and this entry covers that case.
+| Key         | Purpose                                                         |
+| ----------- | --------------------------------------------------------------- |
+| `id`        | SureFlap device ID                                              |
+| `in`, `out` | the places on each side; `in` places are also spoken "in the …" |
+| `name`      | the flap's name                                                 |
+| `curfew`    | `true` if "keep Garfield in" should change this flap            |
+| `icon`      | optional Font Awesome class for the device                      |
 
-Optional flap keys:
+Keep the `"id": 0` entry. SureFlap leaves out the device when a pet's position
+is set by hand in the app, and this entry covers that case.
 
-- `"curfew": true` lets `SetCatPermissionIntent` change who's allowed out through that flap.
-- `"icon"` sets a Font Awesome class for the device (default `fa-home`).
+#### Cats
 
-Each `in` location other than `inside` is spoken as "in the …", e.g. "in the house".
-
-### 2. Run locally
-
-Requires Node.js.
-
-```sh
-npm install
-(cd apps/catflap && npm install)
-npm start
+```json
+{ "name": "Garfield", "dob": "2018-06-19", "synonyms": ["Garfy"] }
 ```
 
-Open `http://localhost:8080/alexa/catflap` to see the generated intents, slots and utterances.
+Only cats listed here are reported. `synonyms` are other names Alexa should
+recognise. Add `"dod"` to retire a cat without deleting it.
 
-### 3. Run with Docker
+### 2. Run it
 
-Clone the repo on the Docker host, put `config.json` in the repo root, and start the stack:
+With Docker Compose:
 
 ```sh
-git clone https://github.com/hdurdle/alexa-cats.git && cd alexa-cats
-cp apps/catflap/config-dist.json config.json   # then fill it in
 docker compose up -d --build
 ```
 
-[docker-compose.yml](docker-compose.yml) mounts `./config.json` read-only. The container runs as
-uid 1000, so the file must be readable by that user. `config.json` is excluded from the image.
+[docker-compose.yml](docker-compose.yml) mounts `./config.json` read-only into
+a read-only container running as uid 1000, so the file must be readable by that
+user (`chmod 644 config.json`). To update:
+`git pull && docker compose up -d --build`.
 
-Put host-specific settings, such as reverse proxy labels and networks, in a
-`docker-compose.override.yml` next to it. Compose merges it automatically, and it is git-ignored.
-For example, behind Traefik:
+Alexa needs an HTTPS endpoint with a trusted certificate, so put the container
+behind a reverse proxy. Put host-specific settings in a
+`docker-compose.override.yml` next to the compose file. Compose merges it
+automatically, and it is git-ignored. For example, behind Traefik:
 
 ```yaml
 services:
@@ -122,28 +135,54 @@ networks:
     external: true
 ```
 
-To update: `git pull && docker compose up -d --build`.
+Without Docker, use Node.js 22 or later: `npm ci --omit=dev && npm start`.
 
-### 4. Create the Alexa Skill
+### 3. Create the Alexa skill
 
-1. Create a custom skill in the [Alexa developer console](https://developer.amazon.com/alexa/console/ask).
-2. Paste [interaction_model.json](apps/catflap/interaction_model.json) into the JSON editor, adjusted
-   for your cats and locations.
-3. Set the endpoint to an HTTPS URL that reaches `/alexa/catflap` on this server.
-4. Optionally put the skill ID in `applicationId` in `config.json`.
+1. Build your interaction model from your config. This needs Node.js and
+   `npm install`, and writes `apps/catflap/interaction_model.local.json`
+   (git-ignored, because it lists your cats and rooms). It reads
+   `apps/catflap/config.json`, so copy or link your config there first:
+   ```sh
+   npm run model
+   ```
+2. Create a custom skill in the
+   [Alexa developer console](https://developer.amazon.com/alexa/console/ask)
+   and paste that file into the JSON editor.
+3. Set the endpoint to `https://<your host>/alexa/catflap`, choosing "My
+   development endpoint has a certificate from a trusted certificate authority".
+4. Put the skill ID in `applicationId` in `config.json`.
 
-## Security notes
+Run `npm run model` again whenever you add a cat or a place.
 
-- Alexa request signature verification is off (`verify: false` in `server.js`). Anyone who can
-  reach the endpoint can call it, including the intents that change pet position and curfew.
-  Put it behind a reverse proxy, and turn verification on if you expose it to the internet.
-- Never commit `config.json`. It holds your SureFlap token.
+## Development
 
-## Ideas
+```sh
+npm install
+npm test              # unit and request-level tests, no network needed
+npm run lint
+npm run format
+```
 
-- Lock or unlock some or all flaps
-- Read the curfew schedule back
+To try requests by hand, turn off signature verification and enable the schema
+page. Never do this on an endpoint Alexa can reach:
+
+```sh
+ALEXA_VERIFY=false ALEXA_DEBUG=true npm start
+curl localhost:8080/alexa/catflap?schema
+```
+
+`CONFIG_PATH` points the server at a different config file.
+
+## Security
+
+- Every request is verified as coming from Alexa: the `Signature-256` header,
+  the certificate chain up to a trusted root, and a timestamp within 150
+  seconds. This uses Node's built-in crypto (see
+  [verify.js](apps/catflap/verify.js)).
+- Set `applicationId` so that only your skill can use the endpoint.
+- `config.json` holds your SureFlap login. It is never baked into the image.
 
 ## License
 
-[GPL-3.0](apps/catflap/LICENSE)
+[GPL-3.0](LICENSE)

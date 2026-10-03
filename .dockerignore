@@ -1,7 +1,11 @@
 .git
+.github
 **/node_modules
 **/config.json
+**/interaction_model*.json
 **/*.log
+**/*.md
 .env
 docker-compose*.yml
+scripts
 test
