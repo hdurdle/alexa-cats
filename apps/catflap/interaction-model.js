@@ -24,18 +24,25 @@ function buildModel(config) {
     intent.samples = [...(app.intents[intent.name].utterances || [])];
   });
 
-  // Alexa mishandles accented slot values ("Brontë" never matched, and its
-  // utterance profiler failed), so the model only holds plain spellings. The
-  // skill matches names ignoring accents, so "Bronte" still finds "Brontë".
+  // Values keep their configured spelling, and any accented value or synonym
+  // also gets its plain spelling as a synonym, so Alexa resolves "bronte" to
+  // "Brontë". (Listing only the plain spelling stopped Alexa recognising
+  // "where is bronte" at all.) IDs are always plain.
   languageModel.types.forEach((type) =>
     type.values.forEach((value) => {
-      const plain = stripAccents(value.name.value);
-      const synonyms = [
-        ...new Set(value.name.synonyms.map(stripAccents)),
-      ].filter((x) => normalizeName(x) !== normalizeName(plain));
+      const forms = [value.name.value, ...value.name.synonyms];
+      const plainForms = forms
+        .filter((x) => stripAccents(x) !== x)
+        .map(normalizeName);
+      const synonyms = [];
+      [...value.name.synonyms, ...plainForms].forEach((x) => {
+        const seen = [value.name.value, ...synonyms];
+        if (!seen.some((y) => y.toLowerCase() === x.toLowerCase())) {
+          synonyms.push(x);
+        }
+      });
 
-      value.name.value = plain;
-      value.id = slotId(plain);
+      value.id = slotId(value.name.value);
       if (synonyms.length > 0) value.name.synonyms = synonyms;
       else delete value.name.synonyms;
     }),

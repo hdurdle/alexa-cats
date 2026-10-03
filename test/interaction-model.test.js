@@ -131,25 +131,29 @@ test("custom slot types used by intents are all defined", () => {
     .forEach((slot) => assert.ok(defined.includes(slot.type), slot.type));
 });
 
-test("the model holds no accented slot values", () => {
+test("accented names keep their spelling and get a plain synonym", () => {
+  const config = fixture("config.json");
+  config.catdobs.push({ name: "Brontë", dob: "2021-04-01" });
+  const values = buildModel(config).interactionModel.languageModel.types.find(
+    (x) => x.name === "PetName",
+  ).values;
+  assert.deepEqual(
+    values.find((x) => x.id === "BRONTE"),
+    { id: "BRONTE", name: { value: "Brontë", synonyms: ["bronte"] } },
+  );
+});
+
+test("accented synonyms get plain versions without duplicates", () => {
   const config = fixture("config.json");
   config.catdobs.push({
     name: "Brontë",
     dob: "2021-04-01",
-    synonyms: ["Brontë Bear", "bronte"],
+    synonyms: ["Zoë", "bronte"],
   });
-  const types = buildModel(config).interactionModel.languageModel.types;
-  const bronte = types
-    .find((x) => x.name === "PetName")
+  const bronte = buildModel(config)
+    .interactionModel.languageModel.types.find((x) => x.name === "PetName")
     .values.find((x) => x.id === "BRONTE");
-  assert.deepEqual(bronte, {
-    id: "BRONTE",
-    name: { value: "Bronte", synonyms: ["Bronte Bear"] },
-  });
-
-  const text = JSON.stringify(types);
-  const nonAscii = [...text].filter((c) => c.charCodeAt(0) > 127);
-  assert.deepEqual(nonAscii, []);
+  assert.deepEqual(bronte.name.synonyms, ["Zoë", "bronte", "zoe"]);
 });
 
 test("intents that take a cat name have enough samples", () => {
