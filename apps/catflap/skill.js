@@ -147,8 +147,13 @@ function createApp({ config, client, logger = createLogger(config) }) {
     res.say("Bye.");
   });
 
-  alexaApp.sessionEnded(function () {
-    logger.info("session ended");
+  // Alexa says why: USER_INITIATED, EXCEEDED_MAX_REPROMPTS, or ERROR with
+  // details (for example when it rejected the skill's last response)
+  alexaApp.sessionEnded(function (req) {
+    const { reason, error } = req.data.request;
+    const message = "session ended: " + reason;
+    if (error) logger.warn(message + " - " + error.type + ": " + error.message);
+    else logger.info(message);
   });
 
   // Slot types for the interaction model (see interaction-model.js). Cat

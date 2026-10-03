@@ -476,3 +476,23 @@ test("a cat's synonym is matched when Alexa doesn't resolve it", async () => {
   ]);
   assert.match(speech, /^Garfield has been/);
 });
+
+test("session end logs Alexa's reason and error", async () => {
+  const logged = [];
+  const logger = { ...h.silentLogger, warn: (x) => logged.push(x) };
+  const app = createApp({
+    config: h.fixture("config.json"),
+    client: h.stubClient(),
+    logger,
+  });
+  const request = h.sessionEndedRequest();
+  request.request.reason = "ERROR";
+  request.request.error = {
+    type: "INVALID_RESPONSE",
+    message: "The response is invalid",
+  };
+  await app.request(request);
+  assert.deepEqual(logged, [
+    "session ended: ERROR - INVALID_RESPONSE: The response is invalid",
+  ]);
+});
