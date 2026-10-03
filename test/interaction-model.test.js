@@ -164,3 +164,13 @@ test("intents that take a cat name have enough samples", () => {
       ),
     );
 });
+
+test("no sample is only a slot", () => {
+  // a bare "{catname}" sample competes with answers to "Which cat?"
+  const model = buildModel(fixture("config.json")).interactionModel;
+  model.languageModel.intents.forEach((intent) =>
+    intent.samples.forEach((sample) =>
+      assert.doesNotMatch(sample, /^\{\w+\}$/, `${intent.name}: "${sample}"`),
+    ),
+  );
+});

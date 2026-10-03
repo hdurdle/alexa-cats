@@ -296,7 +296,6 @@ function createApp({ config, client, logger = createLogger(config) }) {
         "is {catname} in",
         "has {catname} gone out",
         "has {catname} come in",
-        "{catname}",
       ],
     },
     requireCat(function (req, res) {
