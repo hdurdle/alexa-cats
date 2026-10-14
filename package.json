@@ -28,7 +28,7 @@
   "homepage": "https://github.com/hdurdle/alexa-cats#readme",
   "dependencies": {
     "alexa-app": "^4.2.3",
-    "express": "^5.2.1",
+    "express": "^5.3.0",
     "moment": "^2.31.0",
     "winston": "^3.19.0"
   },
